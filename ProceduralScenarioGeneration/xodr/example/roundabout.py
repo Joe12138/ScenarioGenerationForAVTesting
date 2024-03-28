@@ -1,5 +1,5 @@
 import sys
-sys.path.append("/home/joelan/Desktop/ADTesting/ProceduralScenarioGeneration")
+sys.path.append("/home/joelan/Desktop/ADTesting/ScenarioGenerationForAVTesting/ProceduralScenarioGeneration/")
 
 from xodr.scenario_generator import ScenarioGenerator
 from xodr.opendrive.open_drive import OpenDrive
@@ -15,6 +15,7 @@ from xodr.basic_structure.straight_road import StraightRoad
 from xodr.basic_structure.arc_road import ArcRoad
 from xodr.basic_structure.spiral_road import SpiralRoad
 from xodr.basic_structure.poly3_road import Poly3Road
+from xodr.basic_structure.roundabout import Roundabout
 from xodr.junction_creator.common_junction_creator import CommonJunctionCreator
 from helper import prettyprint
 import numpy as np
@@ -22,175 +23,210 @@ import matplotlib.pyplot as plt
 from utils.utils_fun import get_coeffs_for_poly3
 
 
-class Roundabout(ScenarioGenerator):
+# class Roundabout(ScenarioGenerator):
+#     def __init__(self):
+#         super().__init__()
+        
+#     def road(self, **kwargs):
+#         odr = OpenDrive("roundabout")
+        
+#         straight_road_1 = Poly3Road(road_id=1,
+#                                     x_start=50,
+#                                     y_start=0,
+#                                     h_start=0,
+#                                     left_lane_num=2,
+#                                     right_lane_num=2,
+#                                     center_lane_mark=RoadMarkType.solid_solid,
+#                                     center_lanemark_param={"width": 0.2},
+#                                     left_lane_mark_list=[RoadMarkType.broken, RoadMarkType.solid],
+#                                     left_lanemark_para=[{"width":0.15, "length":6, "space":9}, {"width": 0.15}],
+#                                     right_lane_mark_list=[RoadMarkType.broken, RoadMarkType.solid],
+#                                     right_lanemark_para=[{"width":0.15, "length":6, "space":9}, {"width": 0.15}],
+#                                     center_lane_width=3.2,
+#                                     left_lane_width=[3.2, 3.2],
+#                                     right_lane_width=[3.2, 3.2],
+#                                     lane_length=10,
+#                                     x_poly_para=(0, 1, 0, 0))
+        
+#         straight_road_2 = Poly3Road(road_id=2,
+#                                     x_start=0,
+#                                     y_start=50,
+#                                     h_start=np.pi/2,
+#                                     left_lane_num=2,
+#                                     right_lane_num=2,
+#                                     center_lane_mark=RoadMarkType.solid_solid,
+#                                     center_lanemark_param={"width": 0.2},
+#                                     left_lane_mark_list=[RoadMarkType.broken, RoadMarkType.solid],
+#                                     left_lanemark_para=[{"width":0.15, "length":6, "space":9}, {"width": 0.15}],
+#                                     right_lane_mark_list=[RoadMarkType.broken, RoadMarkType.solid],
+#                                     right_lanemark_para=[{"width":0.15, "length":6, "space":9}, {"width": 0.15}],
+#                                     center_lane_width=3.2,
+#                                     left_lane_width=[3.2, 3.2],
+#                                     right_lane_width=[3.2, 3.2],
+#                                     lane_length=10,
+#                                     y_poly_para=(0, 1, 0, 0))
+        
+#         straight_road_3 = Poly3Road(road_id=3,
+#                                     x_start=-50,
+#                                     y_start=0,
+#                                     h_start=np.pi,
+#                                     left_lane_num=2,
+#                                     right_lane_num=2,
+#                                     center_lane_mark=RoadMarkType.solid_solid,
+#                                     center_lanemark_param={"width": 0.2},
+#                                     left_lane_mark_list=[RoadMarkType.broken, RoadMarkType.solid],
+#                                     left_lanemark_para=[{"width":0.15, "length":6, "space":9}, {"width": 0.15}],
+#                                     right_lane_mark_list=[RoadMarkType.broken, RoadMarkType.solid],
+#                                     right_lanemark_para=[{"width":0.15, "length":6, "space":9}, {"width": 0.15}],
+#                                     center_lane_width=3.2,
+#                                     left_lane_width=[3.2, 3.2],
+#                                     right_lane_width=[3.2, 3.2],
+#                                     lane_length=10,
+#                                     x_poly_para=(0, -1, 0, 0))
+        
+#         straight_road_4 = Poly3Road(road_id=4,
+#                                     x_start=0,
+#                                     y_start=-50,
+#                                     h_start=3*np.pi/2,
+#                                     left_lane_num=2,
+#                                     right_lane_num=2,
+#                                     center_lane_mark=RoadMarkType.solid_solid,
+#                                     center_lanemark_param={"width": 0.2},
+#                                     left_lane_mark_list=[RoadMarkType.broken, RoadMarkType.solid],
+#                                     left_lanemark_para=[{"width":0.15, "length":6, "space":9}, {"width": 0.15}],
+#                                     right_lane_mark_list=[RoadMarkType.broken, RoadMarkType.solid],
+#                                     right_lanemark_para=[{"width":0.15, "length":6, "space":9}, {"width": 0.15}],
+#                                     center_lane_width=3.2,
+#                                     left_lane_width=[3.2, 3.2],
+#                                     right_lane_width=[3.2, 3.2],
+#                                     lane_length=10,
+#                                     y_poly_para=(0, -1, 0, 0))
+        
+#         road_1 = straight_road_1.road_generation()
+#         road_2 = straight_road_2.road_generation()
+#         road_3 = straight_road_3.road_generation()
+#         road_4 = straight_road_4.road_generation()
+        
+#         odr.add_road(road_1)
+#         odr.add_road(road_2)
+#         odr.add_road(road_3)
+#         odr.add_road(road_4)
+        
+#         jc = CommonJunctionCreator(id=100, name="cross_junction")
+#         # _, _, _, heading = straight_road_1.
+#         jc.add_incoming_road_cartesian_geometry(
+#             road=road_1,
+#             x=50,
+#             y=0,
+#             heading=straight_road_1.incoming_heading,
+#             road_connection="predecessor"
+#         )
+#         jc.add_incoming_road_cartesian_geometry(
+#             road=road_2,
+#             x=0,
+#             y=50,
+#             heading=straight_road_2.incoming_heading,
+#             road_connection="predecessor"
+#         )
+#         jc.add_incoming_road_cartesian_geometry(
+#             road=road_3,
+#             x=-50,
+#             y=0,
+#             heading=straight_road_3.incoming_heading,
+#             road_connection="predecessor"
+#         )
+#         jc.add_incoming_road_cartesian_geometry(
+#             road=road_4,
+#             x=0,
+#             y=-50,
+#             heading=straight_road_4.incoming_heading,
+#             road_connection="predecessor"
+#         )
+        
+#         jc.add_connection(road_one_id=1,
+#                           road_two_id=2,
+#                           lane_one_id=[2],
+#                           lane_two_id=[-1])
+        
+#         # jc.add_connection(road_one_id=1,
+#         #                   road_two_id=2,
+#         #                   lane_one_id=[2],
+#         #                   lane_two_id=[-2])
+        
+#         jc.add_connection(road_one_id=2,
+#                           road_two_id=3,
+#                           lane_one_id=[2],
+#                           lane_two_id=[-1, -2])
+        
+#         jc.add_connection(road_one_id=3,
+#                           road_two_id=4,
+#                           lane_one_id=[2],
+#                           lane_two_id=[-1, -2])
+        
+#         jc.add_connection(road_one_id=4,
+#                           road_two_id=1,
+#                           lane_one_id=[2],
+#                           lane_two_id=[-1, -2])
+        
+#         jc.add_connection(road_one_id=1,
+#                           road_two_id=3,
+#                           lane_one_id=[1, 2],
+#                           lane_two_id=[-1, -2])
+        
+#         jc.add_connection(road_one_id=2,
+#                           road_two_id=4,
+#                           lane_one_id=[1, 2],
+#                           lane_two_id=[-1, -2])
+        
+#         jc.add_connection(road_one_id=3,
+#                           road_two_id=1,
+#                           lane_one_id=[1, 2],
+#                           lane_two_id=[-1, -2])
+#         jc.add_connection(road_one_id=4,
+#                           road_two_id=2,
+#                           lane_one_id=[1, 2],
+#                           lane_two_id=[-1, -2])
+        
+#         odr.add_junction_creator(jc)
+        
+#         odr.adjust_roads_and_lanes()
+#         plt.show()
+#         return odr
+
+class RoundaboutScene(ScenarioGenerator):
     def __init__(self):
         super().__init__()
         
     def road(self, **kwargs):
         odr = OpenDrive("roundabout")
         
-        straight_road_1 = Poly3Road(road_id=1,
-                                    x_start=50,
-                                    y_start=0,
-                                    h_start=0,
-                                    left_lane_num=2,
-                                    right_lane_num=2,
-                                    center_lane_mark=RoadMarkType.solid_solid,
-                                    center_lanemark_param={"width": 0.2},
-                                    left_lane_mark_list=[RoadMarkType.broken, RoadMarkType.solid],
-                                    left_lanemark_para=[{"width":0.15, "length":6, "space":9}, {"width": 0.15}],
-                                    right_lane_mark_list=[RoadMarkType.broken, RoadMarkType.solid],
-                                    right_lanemark_para=[{"width":0.15, "length":6, "space":9}, {"width": 0.15}],
-                                    center_lane_width=3.2,
-                                    left_lane_width=[3.2, 3.2],
-                                    right_lane_width=[3.2, 3.2],
-                                    lane_length=10,
-                                    x_poly_para=(0, 1, 0, 0))
+        r_obj = Roundabout(center_x=0,
+                            center_y=0,
+                            enter_lane_num=2,
+                            arc_lane_num=2,
+                            enter_lane_width=3.2,
+                            arc_lane_width=3.2,
+                            road_id_start=1,
+                            enter_lane_length=50,
+                            num_intersection=5,
+                            junction_radius=25,
+                            radius=100,
+                            enter_lane_type="arc")
+        enter_road_list, arc_road_list, j_list = r_obj.roundabout_generator()
         
-        straight_road_2 = Poly3Road(road_id=2,
-                                    x_start=0,
-                                    y_start=50,
-                                    h_start=np.pi/2,
-                                    left_lane_num=2,
-                                    right_lane_num=2,
-                                    center_lane_mark=RoadMarkType.solid_solid,
-                                    center_lanemark_param={"width": 0.2},
-                                    left_lane_mark_list=[RoadMarkType.broken, RoadMarkType.solid],
-                                    left_lanemark_para=[{"width":0.15, "length":6, "space":9}, {"width": 0.15}],
-                                    right_lane_mark_list=[RoadMarkType.broken, RoadMarkType.solid],
-                                    right_lanemark_para=[{"width":0.15, "length":6, "space":9}, {"width": 0.15}],
-                                    center_lane_width=3.2,
-                                    left_lane_width=[3.2, 3.2],
-                                    right_lane_width=[3.2, 3.2],
-                                    lane_length=10,
-                                    y_poly_para=(0, 1, 0, 0))
+        for road_obj in enter_road_list:
+            odr.add_road(road_obj)
+            
+        for road_obj in arc_road_list:
+            odr.add_road(road_obj)
         
-        straight_road_3 = Poly3Road(road_id=3,
-                                    x_start=-50,
-                                    y_start=0,
-                                    h_start=np.pi,
-                                    left_lane_num=2,
-                                    right_lane_num=2,
-                                    center_lane_mark=RoadMarkType.solid_solid,
-                                    center_lanemark_param={"width": 0.2},
-                                    left_lane_mark_list=[RoadMarkType.broken, RoadMarkType.solid],
-                                    left_lanemark_para=[{"width":0.15, "length":6, "space":9}, {"width": 0.15}],
-                                    right_lane_mark_list=[RoadMarkType.broken, RoadMarkType.solid],
-                                    right_lanemark_para=[{"width":0.15, "length":6, "space":9}, {"width": 0.15}],
-                                    center_lane_width=3.2,
-                                    left_lane_width=[3.2, 3.2],
-                                    right_lane_width=[3.2, 3.2],
-                                    lane_length=10,
-                                    x_poly_para=(0, -1, 0, 0))
-        
-        straight_road_4 = Poly3Road(road_id=4,
-                                    x_start=0,
-                                    y_start=-50,
-                                    h_start=3*np.pi/2,
-                                    left_lane_num=2,
-                                    right_lane_num=2,
-                                    center_lane_mark=RoadMarkType.solid_solid,
-                                    center_lanemark_param={"width": 0.2},
-                                    left_lane_mark_list=[RoadMarkType.broken, RoadMarkType.solid],
-                                    left_lanemark_para=[{"width":0.15, "length":6, "space":9}, {"width": 0.15}],
-                                    right_lane_mark_list=[RoadMarkType.broken, RoadMarkType.solid],
-                                    right_lanemark_para=[{"width":0.15, "length":6, "space":9}, {"width": 0.15}],
-                                    center_lane_width=3.2,
-                                    left_lane_width=[3.2, 3.2],
-                                    right_lane_width=[3.2, 3.2],
-                                    lane_length=10,
-                                    y_poly_para=(0, -1, 0, 0))
-        
-        road_1 = straight_road_1.road_generation()
-        road_2 = straight_road_2.road_generation()
-        road_3 = straight_road_3.road_generation()
-        road_4 = straight_road_4.road_generation()
-        
-        odr.add_road(road_1)
-        odr.add_road(road_2)
-        odr.add_road(road_3)
-        odr.add_road(road_4)
-        
-        jc = CommonJunctionCreator(id=100, name="cross_junction")
-        jc.add_incoming_road_cartesian_geometry(
-            road=road_1,
-            x=50,
-            y=0,
-            heading=np.pi,
-            road_connection="predecessor"
-        )
-        jc.add_incoming_road_cartesian_geometry(
-            road=road_2,
-            x=0,
-            y=50,
-            heading=3*np.pi/2,
-            road_connection="predecessor"
-        )
-        jc.add_incoming_road_cartesian_geometry(
-            road=road_3,
-            x=-50,
-            y=0,
-            heading=0,
-            road_connection="predecessor"
-        )
-        jc.add_incoming_road_cartesian_geometry(
-            road=road_4,
-            x=0,
-            y=-50,
-            heading=np.pi/2,
-            road_connection="predecessor"
-        )
-        
-        jc.add_connection(road_one_id=1,
-                          road_two_id=2,
-                          lane_one_id=[2],
-                          lane_two_id=[-1])
-        
-        # jc.add_connection(road_one_id=1,
-        #                   road_two_id=2,
-        #                   lane_one_id=[2],
-        #                   lane_two_id=[-2])
-        
-        jc.add_connection(road_one_id=2,
-                          road_two_id=3,
-                          lane_one_id=[2],
-                          lane_two_id=[-1, -2])
-        
-        jc.add_connection(road_one_id=3,
-                          road_two_id=4,
-                          lane_one_id=[2],
-                          lane_two_id=[-1, -2])
-        
-        jc.add_connection(road_one_id=4,
-                          road_two_id=1,
-                          lane_one_id=[2],
-                          lane_two_id=[-1, -2])
-        
-        jc.add_connection(road_one_id=1,
-                          road_two_id=3,
-                          lane_one_id=[1, 2],
-                          lane_two_id=[-1, -2])
-        
-        jc.add_connection(road_one_id=2,
-                          road_two_id=4,
-                          lane_one_id=[1, 2],
-                          lane_two_id=[-1, -2])
-        
-        jc.add_connection(road_one_id=3,
-                          road_two_id=1,
-                          lane_one_id=[1, 2],
-                          lane_two_id=[-1, -2])
-        jc.add_connection(road_one_id=4,
-                          road_two_id=2,
-                          lane_one_id=[1, 2],
-                          lane_two_id=[-1, -2])
-        
-        odr.add_junction_creator(jc)
-        
+        for jc in j_list:
+            odr.add_junction_creator(jc)
+            # break
         odr.adjust_roads_and_lanes()
-        plt.show()
+        
         return odr
-    
+        
 
 if __name__ == "__main__":
     # a = get_coeffs_for_poly3(length=100,
@@ -198,7 +234,7 @@ if __name__ == "__main__":
     #                          zero_start=False,
     #                          lane_width_end=-5)
     
-    sce = Roundabout()
-    prettyprint(sce.road().get_element())
+    sce = RoundaboutScene()
+    # prettyprint(sce.road().get_element())
     
-    sce.generate("/home/joelan/Desktop/ADTesting/ProceduralScenarioGeneration/xodr/example/")
+    sce.generate("/home/joelan/Desktop/ADTesting/ScenarioGenerationForAVTesting/ProceduralScenarioGeneration/xodr/example")

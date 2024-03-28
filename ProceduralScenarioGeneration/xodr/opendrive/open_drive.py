@@ -5,9 +5,13 @@ from xodr.opendrive.road import Road
 from xodr.exceptions import IdAlreadyExists, RoadsAndLanesNotAdjusted, GeneralIssueInputArguments, MixingDrivingDirection, UndefinedRoadNetwork
 from xodr.enumerations import JunctionType, ElementType, ContactPoint
 from xodr.link.link_utils import create_lane_links
+from xodr.geometry.spiral import Spiral
+from xodr.geometry.plan_view import PlanView
+from xodr.lane.lane_def import LaneDef
 from xodr.geometry.adjustable_planview import AdjustablePlanview 
 from xodr.elevation.elevation_calculator import ElevationCalculator
 from xodr.link.junction import Junction
+from xodr.generator import create_lanes_merge_split
 from helper import printToFile
 
 from typing import Dict
@@ -16,6 +20,8 @@ import numpy as np
 import xml.etree.ElementTree as ET
 # import matplotlib.pyplot as plt
 import matplotlib.axis as axis
+import pyclothoids as pcloth
+
 
 
 class OpenDrive(XodrBase):

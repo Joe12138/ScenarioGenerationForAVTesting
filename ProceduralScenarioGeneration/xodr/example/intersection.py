@@ -1,11 +1,11 @@
 import sys
-sys.path.append("/home/joelan/Desktop/ADTesting/ProceduralScenarioGeneration")
+sys.path.append("/home/joelan/Desktop/ADTesting/ScenarioGenerationForAVTesting/ProceduralScenarioGeneration/")
 
 from xodr.scenario_generator import ScenarioGenerator
 from xodr.opendrive.open_drive import OpenDrive
-from xodr.basic_structure.cross_intersection import IntersectionWithEqualLaneNum
+from xodr.basic_structure.general_cross_intersection import IntersectionWithEqualLaneNum
 from helper import prettyprint
-
+import numpy as np
 
 class Intersection(ScenarioGenerator):
     def __init__(self):
@@ -16,15 +16,19 @@ class Intersection(ScenarioGenerator):
         
         intersection_obj = IntersectionWithEqualLaneNum(center_x=0,
                                                         center_y=0,
-                                                        lane_num=4,
+                                                        lane_num=2,
                                                         lane_width=3.2,
                                                         lane_length=60,
                                                         num_intersection=3,
                                                         road_id_start=1,
                                                         radius=50,
                                                         junction_id=100,
-                                                        turn_mode="one-to-one",
-                                                        direct_connect=False)
+                                                        turn_mode="one-to-more",
+                                                        direct_connect=True,
+                                                        lane_type="straight",
+                                                        curvature=0.01,
+                                                        heading_list=[0, np.pi/2, np.pi],
+                                                        t_intersection=True)
         
         road_list, jc = intersection_obj.intersection_generator()
         
@@ -41,4 +45,4 @@ if __name__ == "__main__":
     sce = Intersection()
     prettyprint(sce.road().get_element())
     
-    sce.generate("/home/joelan/Desktop/ADTesting/ProceduralScenarioGeneration/xodr/example/")
+    sce.generate("/home/joelan/Desktop/ADTesting/ScenarioGenerationForAVTesting/ProceduralScenarioGeneration/xodr/example/")

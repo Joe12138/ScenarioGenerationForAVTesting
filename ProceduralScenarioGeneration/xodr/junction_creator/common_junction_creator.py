@@ -786,6 +786,10 @@ class CommonJunctionCreator:
                 self._h[idx2] + angle_offset_end
             )
             end_h = self._h[idx2] - np.pi
+            # print("*********************************")
+            # print("road_one_id = {}, road_two_id = {}".format(road_one_id, road_two_id))
+            # print("lane_one_id = {}, lane_two_id = {}".format(lane_one_id, lane_two_id))
+            # print("start_x = {}, start_y = {}, start_h = {}, end_x = {}, end_y = {}, end_h = {}".format(start_x, start_y, start_h, end_x, end_y, end_h))
         clothoids = pcloth.SolveG2(
             start_x,
             start_y,
@@ -796,9 +800,21 @@ class CommonJunctionCreator:
             end_h,
             STD_START_CLOTH,
         )
+        a = clothoids[0]
+        start_x, start_y, start_h = a.Parameters[0], a.Parameters[1], a.Parameters[2]
         roadgeoms = [
             Spiral(x.KappaStart, x.KappaEnd, length=x.length) for x in clothoids
         ]
+
+        ## debug
+        # import matplotlib.pyplot as plt
+        # plt.figure()
+        # for i in clothoids:
+        #     plt.plot(*i.SampleXY(500))
+        #
+        # plt.show()
+        ## debug
+
         if self._get_connection_type(idx1) == "successor":
             if lane_one_id < 0:
                 num_left_lanes = 0
@@ -823,6 +839,7 @@ class CommonJunctionCreator:
             lane_width=start_width,
             road_type=self.id,
             lane_width_end=end_width,
+            # start_p_info=(start_x, start_y, start_h),
         )
         if self._height is not None:
             tmp_junc_road.add_elevation(0, self._height, 0, 0, 0)

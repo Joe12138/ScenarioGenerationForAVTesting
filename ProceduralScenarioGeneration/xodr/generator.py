@@ -109,6 +109,7 @@ def create_road(
     center_road_mark=std_roadmark_solid(),
     lane_width=3,
     lane_width_end=None,
+    start_p_info=None
 ):
     """
     create_road creates a road with one lanesection with different number of lanes, lane marks will be of type broken,
@@ -144,8 +145,10 @@ def create_road(
         left_lanes = [left_lanes]
     if isinstance(right_lanes, LaneDef):
         right_lanes = [right_lanes]
-
-    pv = PlanView()
+    if start_p_info is None:
+        pv = PlanView()
+    else:
+        pv = PlanView(x_start=start_p_info[0], y_start=start_p_info[1], h_start=start_p_info[2])
     raw_length = 0
     if isinstance(geometry, list):
         for g in geometry:

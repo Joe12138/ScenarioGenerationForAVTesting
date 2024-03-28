@@ -44,3 +44,6 @@ class _lanelink:
         self.successor = successor
         self.connecting_road = connecting_road
         self.used = False
+        
+    def __str__(self):
+        return "Link from {} to {}".format(self.predecessor.lane_id, self.successor.lane_id)

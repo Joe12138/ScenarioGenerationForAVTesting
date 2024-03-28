@@ -118,6 +118,8 @@ class Poly3Road:
         self.x_poly_para = x_poly_para
         self.y_poly_para = y_poly_para
         
+        self.incoming_heading = None
+        
     def road_generation(self) -> Road:
         plan_view = PlanView(x_start=self.x_start,
                              y_start=self.y_satrt,
@@ -144,7 +146,8 @@ class Poly3Road:
                                           dv=self.y_poly_para[3],
                                           prange="arcLength" if self.lane_length is not None else "normalized",
                                           length=self.lane_length if self.lane_length is not None else None)
-        
+        _, _, _, self.incoming_heading = poly.get_start_data(self.x_start, self.y_satrt, self.h_start)
+        self.incoming_heading = self.incoming_heading + np.pi
         point_list = poly.get_point_list(self.x_start, self.y_satrt, self.h_start, 0.5)
         point_list = [(x, y) for x, y, _ in point_list]
         point_array = np.array(point_list)
