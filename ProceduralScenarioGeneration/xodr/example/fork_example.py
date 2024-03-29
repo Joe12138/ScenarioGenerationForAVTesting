@@ -1,6 +1,6 @@
 import sys
-sys.path.append("/home/joelan/Desktop/ADTesting/ScenarioGenerationForAVTesting/ProceduralScenarioGeneration/")
-
+# sys.path.append("/home/joelan/Desktop/ADTesting/ScenarioGenerationForAVTesting/ProceduralScenarioGeneration/")
+sys.path.append("E:\\ScenarioGenerationTesting\\ScenarioGenerationForAVTesting\\ProceduralScenarioGeneration\\")
 from xodr.scenario_generator import ScenarioGenerator
 from xodr.opendrive.open_drive import OpenDrive
 from xodr.basic_structure.fork import ForkRoad
@@ -27,7 +27,7 @@ class ForkScene(ScenarioGenerator):
                             lane_type="straight",
                             heading_list=[0, np.pi/2, np.pi],
                             reverse=False,
-                            right_side=True)
+                            right_side=False)
 
         road_list, junction = fork_obj.fork_generator()
 
@@ -44,6 +44,8 @@ if __name__ == "__main__":
     sce = ForkScene()
     prettyprint(sce.road().get_element())
 
-    sce.generate(
-        "/home/joelan/Desktop/ADTesting/ScenarioGenerationForAVTesting/ProceduralScenarioGeneration/xodr/example/")
+    # sce.generate(
+    #     "/home/joelan/Desktop/ADTesting/ScenarioGenerationForAVTesting/ProceduralScenarioGeneration/xodr/example/")
+    
+    sce.generate("E:\\ScenarioGenerationTesting\\ScenarioGenerationForAVTesting\\ProceduralScenarioGeneration\\xodr\\example\\")
 

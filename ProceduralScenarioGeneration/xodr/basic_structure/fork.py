@@ -139,7 +139,12 @@ class ForkRoad:
             return road_obj.road_generation()
         else:
             raise ValueError("Invalid lane type: {}".format(self.lane_type))
-
+        
+    # def left_side_fork_generator(self, road_index: int):
+    #     road_end_1 = self.get_road_object(road_id=self.start_road_id+road_index,
+    #                                       x_start)
+        
+    
     def fork_generator(self):
         road_index = 0
         road_start = self.get_road_object(road_id=self.start_road_id+road_index,
@@ -154,12 +159,14 @@ class ForkRoad:
                                           angle=None if self.angle_list is None else self.angle_list[road_index])
 
         road_index += 1
+        # if not self.right_side:
+            
         road_end_1 = self.get_road_object(road_id=self.start_road_id+road_index,
                                           x_start=self.center_x+self.junction_radius,
                                           y_start=self.center_y,
                                           h_start=0,
-                                          left_lane_num=self.lane_num,
-                                          right_lane_num=0,
+                                          left_lane_num=self.lane_num if self.right_side else 0,
+                                          right_lane_num=0 if self.right_side else self.lane_num,
                                           lane_width=self.lane_width,
                                           lane_type=self.lane_type_list[road_index],
                                           lane_length=self.lane_len_list[road_index],
@@ -168,10 +175,10 @@ class ForkRoad:
         road_index += 1
         road_end_2 = self.get_road_object(road_id=self.start_road_id+road_index,
                                           x_start=self.center_x+self.junction_radius+self.enter_len,
-                                          y_start=self.center_y-self.enter_len,
+                                          y_start=self.center_y-self.enter_len if self.right_side else self.center_y+self.enter_len,
                                           h_start=0,
-                                          left_lane_num=0,
-                                          right_lane_num=self.lane_num,
+                                          left_lane_num=0 if self.right_side else self.lane_num,
+                                          right_lane_num=self.lane_num if self.right_side else 0,
                                           lane_width=self.lane_width,
                                           lane_type=self.lane_type_list[road_index],
                                           lane_length=self.lane_len_list[road_index],
@@ -195,21 +202,21 @@ class ForkRoad:
 
         junction.add_incoming_road_cartesian_geometry(road=road_end_2,
                                                       x=self.center_x+self.junction_radius+self.enter_len,
-                                                      y=self.center_y-self.enter_len,
+                                                      y=self.center_y-self.enter_len if self.right_side else self.center_y+self.enter_len,
                                                       heading=np.pi,
                                                       road_connection="predecessor")
 
         for idx in range(self.lane_num):
             junction.add_connection(road_one_id=self.start_road_id,
                                     road_two_id=self.start_road_id+1,
-                                    lane_one_id=-(idx+1),
-                                    lane_two_id=(idx+1))
+                                    lane_one_id=-(idx+1) if self.right_side else idx+1,
+                                    lane_two_id=(idx+1) if self.right_side else -(idx+1))
 
         for idx in range(self.lane_num):
             junction.add_connection(road_one_id=self.start_road_id,
                                     road_two_id=self.start_road_id+2,
-                                    lane_one_id=(idx+1),
-                                    lane_two_id=-(idx+1))
+                                    lane_one_id=(idx+1) if self.right_side else -(idx+1),
+                                    lane_two_id=-(idx+1) if self.right_side else idx+1)
 
         road_list = [road_start, road_end_1, road_end_2]
         return road_list, junction
