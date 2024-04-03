@@ -312,6 +312,7 @@ class CommonJunctionCreator:
                     + str(self.id)
                 )
         if road.successor and road.successor.element_id == self.id:
+        # if len(road.successor) > 0 and any(x.element_id == self.id for x in road.successor):
             self._number_of_left_lanes.append(
                 len(road.lanes.lanesections[-1].leftlanes)
             )
@@ -319,6 +320,7 @@ class CommonJunctionCreator:
                 len(road.lanes.lanesections[-1].rightlanes)
             )
         elif road.predecessor and road.predecessor.element_id == self.id:
+        # elif len(road.predecessor) > 0 and any(x.element_id == self.id for x in road.predecessor):
             self._number_of_left_lanes.append(len(road.lanes.lanesections[0].leftlanes))
             self._number_of_right_lanes.append(
                 len(road.lanes.lanesections[0].rightlanes)
@@ -374,6 +376,14 @@ class CommonJunctionCreator:
             contact_point (ContactPoint)
         """
         incoming_road = self.incoming_roads[self._get_list_index(road_id)]
+
+        # if len(incoming_road.successor) > 0 and any(x.element_id == self.id for x in incoming_road.successor):
+        #     return ContactPoint.end
+        # elif len(incoming_road.predecessor) > 0 and any(x.element_id == self.id for x in incoming_road.predecessor):
+        #     return ContactPoint.start
+        # else:
+        #     raise AttributeError("road is not connected to this junction")
+
         if incoming_road.successor and incoming_road.successor.element_id == self.id:
             return ContactPoint.end
         elif (
@@ -393,6 +403,12 @@ class CommonJunctionCreator:
 
         """
         incoming_road = self.incoming_roads[idx]
+        # if len(incoming_road.successor) > 0 and any(x.element_id == self.id for x in incoming_road.successor):
+        #     return  -1
+        # elif len(incoming_road.predecessor) > 0 and any(x.element_id == self.id for x in incoming_road.predecessor):
+        #     return 0
+        # else:
+        #     raise AttributeError("road is not connected to this junction")
         if incoming_road.successor and incoming_road.successor.element_id == self.id:
             return -1
         elif (
@@ -402,6 +418,8 @@ class CommonJunctionCreator:
             return 0
         else:
             raise AttributeError("road is not connected to this junction")
+
+
 
     def _create_connecting_roads_unequal_lanes(self, road_one_id, road_two_id):
         """_create_connecting_roads_unequal_lanes is a helper method that connects two roads that have different number of lanes going in to the junciton, will only connect lanes that are common between the roads

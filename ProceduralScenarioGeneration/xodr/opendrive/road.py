@@ -235,7 +235,15 @@ class Road(XodrBase):
             enumchecker(element_type, ElementType),
             contact_point,
         )
+        # successor_link = _Link(
+        #     "successor",
+        #     element_id,
+        #     enumchecker(element_type, ElementType),
+        #     contact_point,
+        # )
+        # self.successor.append(successor_link)
         self.links.add_link(self.successor)
+        # self.links.add_link(successor_link)
         self.lane_offset_suc[str(element_id)] = lane_offset
         return self
     
@@ -267,6 +275,7 @@ class Road(XodrBase):
             enumchecker(element_type, ElementType),
             contact_point,
         )
+
         self.links.add_link(self.predecessor)
         self.lane_offset_pred[str(element_id)] = lane_offset
         return self

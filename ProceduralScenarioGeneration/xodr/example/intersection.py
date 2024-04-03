@@ -19,7 +19,7 @@ class Intersection(ScenarioGenerator):
                                                         lane_num=2,
                                                         lane_width=3.2,
                                                         lane_length=60,
-                                                        num_intersection=3,
+                                                        num_intersection=2,
                                                         road_id_start=1,
                                                         radius=50,
                                                         junction_id=100,
@@ -27,7 +27,7 @@ class Intersection(ScenarioGenerator):
                                                         direct_connect=True,
                                                         lane_type="straight",
                                                         curvature=0.01,
-                                                        heading_list=[0, np.pi/2, np.pi],
+                                                        heading_list=[0, np.pi/2],
                                                         t_intersection=True)
         
         road_list, jc = intersection_obj.intersection_generator()

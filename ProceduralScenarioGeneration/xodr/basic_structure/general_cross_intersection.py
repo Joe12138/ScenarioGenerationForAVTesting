@@ -48,8 +48,8 @@ class IntersectionWithEqualLaneNum:
         self.lane_width = lane_width
         self.lane_length = lane_length
         self.num_intersection = num_intersection
-        if self.num_intersection < 3:
-            raise LessIntersectionNum("Too less intersection number: {}".format(self.num_intersection))
+        # if self.num_intersection < 3:
+        #     raise LessIntersectionNum("Too less intersection number: {}".format(self.num_intersection))
         self.radius = radius
         self.road_id_start = road_id_start
         self.junction_id = junction_id
@@ -183,7 +183,8 @@ class IntersectionWithEqualLaneNum:
         road_list: list[Road] = [None]*self.num_intersection
         
         junction = CommonJunctionCreator(id=self.junction_id, 
-                                         name=self.junction_name)
+                                         name=self.junction_name,
+                                         startnum=self.road_id_start*100)
         for idx in range(self.num_intersection):
             if self.heading_list is not None:
                 heading = self.heading_list[idx]

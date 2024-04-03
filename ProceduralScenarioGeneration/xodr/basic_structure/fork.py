@@ -11,6 +11,7 @@ class ForkRoad:
     def __init__(self,
                  center_x: float,
                  center_y: float,
+                 h_start: float,
                  lane_num: int,
                  lane_width: float,
                  start_road_id: int,
@@ -31,6 +32,7 @@ class ForkRoad:
                  enter_len: float = 15) -> None:
         self.center_x = center_x
         self.center_y = center_y
+        self.h_start = h_start
         self.lane_num = lane_num
         self.lane_width = lane_width
         self.start_road_id = start_road_id
@@ -150,7 +152,7 @@ class ForkRoad:
         road_start = self.get_road_object(road_id=self.start_road_id+road_index,
                                           x_start=self.center_x-self.junction_radius,
                                           y_start=self.center_y,
-                                          h_start=np.pi,
+                                          h_start=np.pi+self.h_start,
                                           right_lane_num=self.lane_num,
                                           left_lane_num=self.lane_num,
                                           lane_width=self.lane_width,
@@ -164,7 +166,7 @@ class ForkRoad:
         road_end_1 = self.get_road_object(road_id=self.start_road_id+road_index,
                                           x_start=self.center_x+self.junction_radius,
                                           y_start=self.center_y,
-                                          h_start=0,
+                                          h_start=0+self.h_start,
                                           left_lane_num=self.lane_num if self.right_side else 0,
                                           right_lane_num=0 if self.right_side else self.lane_num,
                                           lane_width=self.lane_width,
@@ -176,7 +178,7 @@ class ForkRoad:
         road_end_2 = self.get_road_object(road_id=self.start_road_id+road_index,
                                           x_start=self.center_x+self.junction_radius+self.enter_len,
                                           y_start=self.center_y-self.enter_len if self.right_side else self.center_y+self.enter_len,
-                                          h_start=0,
+                                          h_start=0+self.h_start,
                                           left_lane_num=0 if self.right_side else self.lane_num,
                                           right_lane_num=self.lane_num if self.right_side else 0,
                                           lane_width=self.lane_width,

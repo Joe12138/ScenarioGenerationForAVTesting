@@ -208,10 +208,11 @@ class RoundaboutScene(ScenarioGenerator):
                             arc_lane_width=3.2,
                             road_id_start=1,
                             enter_lane_length=50,
-                            num_intersection=5,
+                            num_intersection=3,
                             junction_radius=25,
                             radius=100,
-                            enter_lane_type="arc")
+                            enter_lane_type="arc",
+                            heading_list=[0, np.pi/2, 3*np.pi/2],)
         enter_road_list, arc_road_list, j_list = r_obj.roundabout_generator()
         
         for road_obj in enter_road_list:
@@ -235,6 +236,6 @@ if __name__ == "__main__":
     #                          lane_width_end=-5)
     
     sce = RoundaboutScene()
-    # prettyprint(sce.road().get_element())
+    prettyprint(sce.road().get_element())
     
     sce.generate("/home/joelan/Desktop/ADTesting/ScenarioGenerationForAVTesting/ProceduralScenarioGeneration/xodr/example")

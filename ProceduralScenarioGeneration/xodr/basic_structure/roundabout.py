@@ -69,6 +69,7 @@ class Roundabout:
         self.arc_lane_length = arc_lane_length
         self.enter_angle = enter_angle
         self.arc_angle = arc_angle
+        self.heading_list = heading_list
         # angle = np.arcsin(self.junction_radius/self.radius)*2
         # self.arc_angle = 2*np.pi/self.num_intersection - angle*2
         # print("arc_angle: ", self.arc_angle*180/np.pi)
@@ -76,12 +77,20 @@ class Roundabout:
         #     self.arc_angle = 2*np.pi/self.num_intersection
         if self.arc_angle is None:
             self.angle = math.asin(self.junction_radius/self.radius)*2
-            # print("angle: ", angle, ", ", angle*180/np.pi)
-            self.arc_angle = 2*np.pi/self.num_intersection - self.angle
+            if self.heading_list is None:
+                # print("angle: ", angle, ", ", angle*180/np.pi)
+                self.arc_angle = [2*np.pi/self.num_intersection - self.angle for i in range(self.num_intersection)]
+            else:
+                self.arc_angle = [None] * self.num_intersection
+                for idx in range(self.num_intersection):
+                    if idx != self.num_intersection-1:
+                        self.arc_angle[idx] = self.heading_list[idx+1]-self.heading_list[idx]-self.angle
+                    else:
+                        self.arc_angle[idx] = np.pi*2+self.heading_list[0] - self.heading_list[idx]-self.angle
         if self.arc_curvature is None:
             self.arc_curvature = 1/self.radius
         # print("arc_angle: ", self.arc_angle*180/np.pi)
-        self.heading_list = heading_list
+        
         self.junction_num_intersection = junction_num_intersection
         self.junction_heading_list = junction_heading_list
         
@@ -144,7 +153,7 @@ class Roundabout:
         else:
             raise NotImplementedError("No this enetr lane type: {}".format(self.lane_type))
         
-    def get_arc_road(self, road_id: int, x_start: float, y_start: float, h_start: float) -> Road:
+    def get_arc_road(self, road_id: int, x_start: float, y_start: float, h_start: float, arc_angle: float) -> Road:
         if self.arc_lane_type == "arc":
             road = ArcRoad(road_id=road_id,
                            x_start=x_start,
@@ -158,7 +167,7 @@ class Roundabout:
                            left_lane_width=self.arc_lane_width,
                            right_lane_width=self.arc_lane_width,
                            curvature=self.arc_curvature,
-                           angle=self.arc_angle,
+                           angle=arc_angle,
                            lane_length=self.arc_lane_length)
             return road.road_generation()
         elif self.arc_lane_type == "spiral":
@@ -175,7 +184,7 @@ class Roundabout:
                               right_lane_width=self.arc_lane_width,
                               curvature_start=self.arc_curv_start,
                               curvature_end=self.arc_curv_end,
-                              angle=self.arc_angle,
+                              angle=arc_angle,
                               lane_length=self.arc_lane_length
                             )
             return road.road_generation()
@@ -215,9 +224,10 @@ class Roundabout:
             arc_road_obj = self.get_arc_road(road_id=self.road_id_start+idx*2+1,
                                              x_start=arc_x_start,
                                              y_start=arc_y_start,
-                                             h_start=arc_heading)
+                                             h_start=arc_heading,
+                                             arc_angle=self.arc_angle[idx])
             arc_line = Arc(curvature=self.arc_curvature,
-                           angle=self.arc_angle)
+                           angle=self.arc_angle[idx])
             arc_end_x, arc_end_y, arc_end_h, _ = arc_line.get_end_data(x=arc_x_start,
                                                                     y=arc_y_start,
                                                                     h=arc_heading)
@@ -231,7 +241,7 @@ class Roundabout:
             
             junction = CommonJunctionCreator(id=self.junction_start_id+idx,
                                              name=self.junction_name+"_"+str(idx),
-                                             startnum=100*(idx+1))
+                                             startnum=100*(self.junction_start_id+idx))
             junction_list.append(junction)
         
         connected_road_id_list = list()
