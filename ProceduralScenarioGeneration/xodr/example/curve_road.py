@@ -19,7 +19,7 @@ class Curve(ScenarioGenerator):
         super().__init__()
 
     def road(self, **kwargs):
-        odr = OpenDrive("curve")
+        odr = OpenDrive("straight")
 
         road_1_obj = StraightRoad(road_id=1,
                               x_start=0,

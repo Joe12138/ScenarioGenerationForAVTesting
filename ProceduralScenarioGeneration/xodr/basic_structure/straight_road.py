@@ -89,7 +89,7 @@ class StraightRoad:
             self.right_lanemark = [None]*right_lane_num
             for idx in range(right_lane_num):
                 self.right_lanemark[idx] = RoadMark(marking_type=self.right_lane_mark_list[idx],
-                                                    **left_lanemark_para[idx])
+                                                    **right_lanemark_para[idx])
         elif right_lanemark_para is None:
             self.right_lanemark = [std_roadmark_broken()]*(right_lane_num-1)
             self.right_lanemark.append(std_roadmark_solid())

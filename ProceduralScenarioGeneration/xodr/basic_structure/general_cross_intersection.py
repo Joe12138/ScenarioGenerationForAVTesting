@@ -69,8 +69,8 @@ class IntersectionWithEqualLaneNum:
         self.heading_list = heading_list
         self.t_intersection = t_intersection
         
-        if self.t_intersection:
-            self.turn_mode = "one-to-one"
+        # if self.t_intersection:
+        #     self.turn_mode = "one-to-one"
             
     def add_junction_one_to_one(self, junction: CommonJunctionCreator):
         for idx in range(self.num_intersection):

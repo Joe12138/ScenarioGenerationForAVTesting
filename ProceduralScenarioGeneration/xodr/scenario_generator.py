@@ -308,6 +308,7 @@ class ScenarioGenerator:
     def generate(
         self,
         generation_folder,
+        # file_name=None,
         override_parameters=None,
         write_relative_road_path=True,
         name_separator=None,

@@ -153,6 +153,7 @@ class Poly3Road:
         point_array = np.array(point_list)
         
         plt.plot(point_array[:, 0], point_array[:, 1])
+        plt.show()
         
         centerline_mark = self.center_roadmark
         centerlane = Lane(a=self.center_lane_width)

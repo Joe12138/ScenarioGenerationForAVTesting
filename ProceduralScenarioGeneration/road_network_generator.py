@@ -47,7 +47,8 @@ class Parameters:
                  radius: Optional[float] = None,
                  junction_radius: Optional[float] = None,
                  right_side: Optional[bool] = True,
-                 enter_len: Optional[float] = None) -> None:
+                 enter_len: Optional[float] = None,
+                 direct_connect: Optional[bool] = True) -> None:
         # super(self, ScenarioGenerator).__init__()
         self.center_x = center_x
         self.center_y = center_y
@@ -75,16 +76,17 @@ class Parameters:
         # self.t_intersection = t_intersection
         self.right_side = right_side
         self.enter_len = enter_len
+        self.direct_connect = direct_connect
         
 
 class RoadNetworkGenerator(ScenarioGenerator):
     def __init__(self,
                  urban_shape: str = "rectangle",
-                 width: float = 6500,
-                 length: float = 9000,
+                 width: float = 300*2*8,
+                 length: float = 500*2*12,
                  len_interval: float = 500,
                  width_interval: float = 300,
-                 diff_dist: float = 0):
+                 diff_dist: float = 50):
         super().__init__()
         self.urban_shape = urban_shape
         self.width = width
@@ -94,8 +96,8 @@ class RoadNetworkGenerator(ScenarioGenerator):
         
         self.random_seed = 0
                
-        self.len_num = int(self.length // (self.len_interval*6))
-        self.width_num = int(self.width // (self.width_interval*6))
+        self.len_num = int(self.length // (self.len_interval*2))
+        self.width_num = int(self.width // (self.width_interval*2))
         print("len_num = {}, width_num={}".format(self.len_num, self.width_num))
         self.diff_dist = diff_dist
         
@@ -189,6 +191,7 @@ class RoadNetworkGenerator(ScenarioGenerator):
         length = min(self.len_interval, self.width_interval) * (1/2)
         turn_mode = "one-to-one"
         lane_type = "straight"
+        # lane_type = "arc"
         if road_type == 9:  # Tourner
             if w_idx == 0 and l_idx == 0:
                 heading_list = [0, np.pi/2]
@@ -204,10 +207,12 @@ class RoadNetworkGenerator(ScenarioGenerator):
             center_x = l_idx * self.len_interval
             center_y = w_idx * self.width_interval
             if (w_idx!=0 and w_idx!=self.width_num) and (l_idx!=0 and l_idx!=self.len_num):
-                if w_idx%2 == 0:
-                    center_x += self.diff_dist
-                else:
-                    center_x -= self.diff_dist
+                # if w_idx%2 == 0:
+                #     center_x += self.diff_dist
+                # else:
+                #     center_x -= self.diff_dist
+                center_x += self.diff_dist*random.random() if random.random() > 0.5 else -self.diff_dist*random.random()
+                center_y += self.diff_dist*random.random() if random.random() > 0.5 else -self.diff_dist*random.random()
             radius = length*(1/4)
             parameter = Parameters(center_x=center_x,
                                    center_y=center_y,
@@ -244,10 +249,13 @@ class RoadNetworkGenerator(ScenarioGenerator):
                 center_y = w_idx * self.width_interval
 
             if (w_idx != 0 and w_idx != self.width_num) and (l_idx != 0 and l_idx != self.len_num):
-                if w_idx % 2 == 0:
-                    center_x += self.diff_dist
-                else:
-                    center_x -= self.diff_dist
+                # if w_idx % 2 == 0:
+                #     center_x += self.diff_dist
+                # else:
+                #     center_x -= self.diff_dist
+
+                center_x += self.diff_dist * random.random() if random.random() > 0.5 else -self.diff_dist * random.random()
+                center_y += self.diff_dist * random.random() if random.random() > 0.5 else -self.diff_dist * random.random()
                 
             parameter = Parameters(center_x=center_x,
                                    center_y=center_y,
@@ -286,10 +294,12 @@ class RoadNetworkGenerator(ScenarioGenerator):
                 center_y = w_idx * self.width_interval
 
             if (w_idx != 0 and w_idx != self.width_num) and (l_idx != 0 and l_idx != self.len_num):
-                if w_idx % 2 == 0:
-                    center_x += self.diff_dist
-                else:
-                    center_x -= self.diff_dist
+                # if w_idx % 2 == 0:
+                #     center_x += self.diff_dist
+                # else:
+                #     center_x -= self.diff_dist
+                center_x += self.diff_dist * random.random() if random.random() > 0.5 else -self.diff_dist * random.random()
+                center_y += self.diff_dist * random.random() if random.random() > 0.5 else -self.diff_dist * random.random()
             
             # curvature = -0.001
             parameter = Parameters(center_x=center_x,
@@ -327,10 +337,12 @@ class RoadNetworkGenerator(ScenarioGenerator):
             curv_end = 0.01
 
             if (w_idx != 0 and w_idx != self.width_num) and (l_idx != 0 and l_idx != self.len_num):
-                if w_idx % 2 == 0:
-                    center_x += self.diff_dist
-                else:
-                    center_x -= self.diff_dist
+                # if w_idx % 2 == 0:
+                #     center_x += self.diff_dist
+                # else:
+                #     center_x -= self.diff_dist
+                center_x += self.diff_dist * random.random() if random.random() > 0.5 else -self.diff_dist * random.random()
+                center_y += self.diff_dist * random.random() if random.random() > 0.5 else -self.diff_dist * random.random()
             
             parameter = Parameters(center_x=center_x,
                                    center_y=center_y,
@@ -346,6 +358,8 @@ class RoadNetworkGenerator(ScenarioGenerator):
                                    lane_type="spiral")
             return parameter
         elif road_type == 4:  # Intersection
+            curvature = 0.01
+            # lane_type = "arc"
             if w_idx == 0:
                 num_intersection = 3
                 heading_list = [0, np.pi / 2, np.pi]
@@ -358,6 +372,9 @@ class RoadNetworkGenerator(ScenarioGenerator):
             elif l_idx == self.len_num and (w_idx != 0 or w_idx != self.width_num):
                 num_intersection = 3
                 heading_list = [np.pi/2, np.pi, 3*np.pi/2]
+            elif w_idx == self.width_num-2 and l_idx < self.len_num-2:
+                num_intersection = 3
+                heading_list = [0, np.pi, 3*np.pi/2]
             else:
                 num_intersection = 4
                 heading_list = [0, np.pi/2, np.pi, 3*np.pi/2]
@@ -369,7 +386,7 @@ class RoadNetworkGenerator(ScenarioGenerator):
                     center_x += self.diff_dist
                 else:
                     center_x -= self.diff_dist
-            turn_mode = "one-to-more"
+            turn_mode = "one-to-more" if random.random() > 0.5 else "one-to-one"
             parameter = Parameters(center_x=center_x,
                                    center_y=center_y,
                                    h_start=None,
@@ -384,7 +401,9 @@ class RoadNetworkGenerator(ScenarioGenerator):
                                    turn_mode=turn_mode,
                                    lane_type=lane_type,
                                    t_intersection=True if num_intersection == 3 else False,
-                                   radius=length/3)
+                                   radius=length/3,
+                                   curvature=curvature,
+                                   direct_connect=True if random.random() > 0.5 or turn_mode == "one-to-more" else False)
             return parameter
         elif road_type == 5:  ## Roundabout
             if w_idx == 0:
@@ -399,6 +418,9 @@ class RoadNetworkGenerator(ScenarioGenerator):
             elif l_idx == self.len_num and (w_idx != 0 or w_idx != self.width_num):
                 num_intersection = 3
                 heading_list = [np.pi / 2, np.pi, 3 * np.pi / 2]
+            elif w_idx == self.width_num - 2 and l_idx < self.len_num-2:
+                num_intersection = 3
+                heading_list = [0, np.pi, 3 * np.pi / 2]
             else:
                 num_intersection = 4
                 heading_list = [0, np.pi / 2, np.pi, 3 * np.pi / 2]
@@ -406,15 +428,17 @@ class RoadNetworkGenerator(ScenarioGenerator):
             center_x = l_idx * self.len_interval
             center_y = w_idx * self.width_interval
             if (w_idx != 0 and w_idx != self.width_num) and (l_idx != 0 and l_idx != self.len_num):
-                if w_idx % 2 == 0:
-                    center_x += self.diff_dist
-                else:
-                    center_x -= self.diff_dist
+                # if w_idx % 2 == 0:
+                #     center_x += self.diff_dist
+                # else:
+                #     center_x -= self.diff_dist
+                center_x += self.diff_dist * random.random() if random.random() > 0.5 else -self.diff_dist * random.random()
+                center_y += self.diff_dist * random.random() if random.random() > 0.5 else -self.diff_dist * random.random()
             turn_mode = "one-to-more"
             parameter = Parameters(center_x=center_x,
                                    center_y=center_y,
                                    h_start=None,
-                                   length=length*(1/2),
+                                   length=length*(1/4),
                                    angle=False,
                                    left_lane_num=left_lane_num,
                                    right_lane_num=right_lane_num,
@@ -442,10 +466,12 @@ class RoadNetworkGenerator(ScenarioGenerator):
             center_x = l_idx * self.len_interval
             center_y = w_idx * self.width_interval
             if (w_idx != 0 and w_idx != self.width_num) and (l_idx != 0 and l_idx != self.len_num):
-                if w_idx % 2 == 0:
-                    center_x += self.diff_dist
-                else:
-                    center_x -= self.diff_dist
+                # if w_idx % 2 == 0:
+                #     center_x += self.diff_dist
+                # else:
+                #     center_x -= self.diff_dist
+                center_x += self.diff_dist * random.random() if random.random() > 0.5 else -self.diff_dist * random.random()
+                center_y += self.diff_dist * random.random() if random.random() > 0.5 else -self.diff_dist * random.random()
             center_x -= length*(3/2)
             len_list = [length*(1/3), length*(1/3), length*(1/3)]
             parameter = Parameters(center_x=center_x,
@@ -477,10 +503,12 @@ class RoadNetworkGenerator(ScenarioGenerator):
                 center_y = w_idx * self.width_interval
 
             if (w_idx != 0 and w_idx != self.width_num) and (l_idx != 0 and l_idx != self.len_num):
-                if w_idx % 2 == 0:
-                    center_x += self.diff_dist
-                else:
-                    center_x -= self.diff_dist
+                # if w_idx % 2 == 0:
+                #     center_x += self.diff_dist
+                # else:
+                #     center_x -= self.diff_dist
+                center_x += self.diff_dist * random.random() if random.random() > 0.5 else -self.diff_dist * random.random()
+                center_y += self.diff_dist * random.random() if random.random() > 0.5 else -self.diff_dist * random.random()
             
             parameter = Parameters(center_x=center_x,
                                    center_y=center_y,
@@ -523,7 +551,7 @@ class RoadNetworkGenerator(ScenarioGenerator):
         print(road_net_type_array)
         print("------------------------------")
         
-        road_id = -200
+        road_id = -20000
         for w_idx in range(self.width_num+1):
             for l_idx in range(self.len_num+1):
                 road_type = road_net_type_array[w_idx][l_idx]
@@ -594,7 +622,8 @@ class RoadNetworkGenerator(ScenarioGenerator):
                                                                     curv_start=paras.curv_start,
                                                                     curv_end=paras.curv_end,
                                                                     heading_list=paras.heading_list,
-                                                                    t_intersection=paras.t_intersection)
+                                                                    t_intersection=paras.t_intersection,
+                                                                    direct_connect=paras.direct_connect)
                     road_list, junction = intersection_obj.intersection_generator()
                     for road_obj in road_list:
                         odr.add_road(copy.deepcopy(road_obj))
@@ -671,8 +700,8 @@ class RoadNetworkGenerator(ScenarioGenerator):
                     raise ValueError("No this road type {}.".format(road_type))
         lane_num = 3
         lane_width = 3
-        for w_idx in range(self.width_num):
-            for l_idx in range(self.len_num):
+        for w_idx in range(self.width_num+1):
+            for l_idx in range(self.len_num+1):
                 if w_idx == 0:
                     if l_idx == 0:
                         if road_net_type_array[w_idx+1][l_idx] != 0:
@@ -754,12 +783,28 @@ class RoadNetworkGenerator(ScenarioGenerator):
                         else:
                             pass
                 elif w_idx < self.width_num-1:
+                    if w_idx < self.width_num-2 and 1 <= l_idx < self.len_num:
+                        if road_net_type_array[w_idx+1][l_idx] != 0:
+                            predecessor = pos_road_dict[(w_idx, l_idx)][1]
+                            successor = pos_road_dict[(w_idx+1, l_idx)][-1]
+                            connect_road = self.add_connected_road(predecessor=predecessor,
+                                                                   successor=successor,
+                                                                   road_id=road_id,
+                                                                   lane_num=lane_num,
+                                                                   lane_width=lane_width,
+                                                                   reverse=True)
+                            road_id += 1
+                            odr.add_road(connect_road)
+
                     if road_net_type_array[w_idx][l_idx] != 0:
                         if l_idx == 0:
                             if road_net_type_array[w_idx+1][l_idx] != 0:
                                 predecessor = pos_road_dict[(w_idx, l_idx)][1]
                                 successor = pos_road_dict[(w_idx+1, l_idx)][-1]
-
+                                if predecessor.successor is not None:
+                                    predecessor.successor = None
+                                if successor.successor is not None:
+                                    successor.successor = None
                                 connect_road = self.add_connected_road(predecessor=predecessor,
                                                                        successor=successor,
                                                                        road_id=road_id,
@@ -773,7 +818,7 @@ class RoadNetworkGenerator(ScenarioGenerator):
                                 successor = pos_road_dict[(self.width_num, self.len_num)][1]
                                 if predecessor.successor is not None:
                                     predecessor.successor = None
-                                if predecessor.successor is not None:
+                                if successor.successor is not None:
                                     successor.successor = None
                                 connect_road = self.add_connected_road(predecessor=predecessor,
                                                                        successor=successor,
@@ -788,8 +833,11 @@ class RoadNetworkGenerator(ScenarioGenerator):
 
                             if road_net_type_array[w_idx][l_idx+1] != 0:
                                 predecessor = pos_road_dict[(w_idx, l_idx)][0]
-                                successor = pos_road_dict[(w_idx, l_idx+1)][2]
-
+                                successor = pos_road_dict[(w_idx, l_idx+1)][-2]
+                                if predecessor.successor is not None:
+                                    predecessor.successor = None
+                                if successor.successor is not None:
+                                    successor.successor = None
                                 connect_road = self.add_connected_road(predecessor=predecessor,
                                                                        successor=successor,
                                                                        road_id=road_id,
@@ -813,8 +861,109 @@ class RoadNetworkGenerator(ScenarioGenerator):
                                                                        reverse=True)
                                 road_id += 1
                                 odr.add_road(connect_road)
+                            else:
+                                pass
+
+                            if w_idx == self.width_num-2 and road_net_type_array[w_idx+1][self.len_num-1] != 0 and l_idx == self.len_num-2:
+                                predecessor = pos_road_dict[(w_idx, l_idx)][1]
+                                successor = pos_road_dict[(w_idx+1, self.len_num-1)][0]
+                                if predecessor.successor is not None:
+                                    predecessor.successor = None
+                                if successor.successor is not None:
+                                    successor.successor = None
+                                connect_road = self.add_connected_road(predecessor=predecessor,
+                                                                       successor=successor,
+                                                                       road_id=road_id,
+                                                                       lane_num=lane_num,
+                                                                       lane_width=lane_width,
+                                                                       reverse=True)
+                                road_id += 1
+                                odr.add_road(connect_road)
+                            else:
+                                pass
+
+                            if w_idx == self.width_num-2 and road_net_type_array[w_idx+1][self.len_num] != 0 and l_idx == self.len_num-1:
+                                predecessor = pos_road_dict[(w_idx, l_idx)][1]
+                                successor = pos_road_dict[(w_idx+1, self.len_num)][1]
+
+                                connect_road = self.add_connected_road(predecessor=predecessor,
+                                                                       successor=successor,
+                                                                       road_id=road_id,
+                                                                       lane_num=0,
+                                                                       lane_width=lane_width,
+                                                                       reverse=True,
+                                                                       right_lane_num=lane_num)
+                                odr.add_road(connect_road)
+                                road_id += 1
+                            else:
+                                pass
+
+                        else:
+                            if road_net_type_array[w_idx + 1][l_idx] != 0:
+                                predecessor = pos_road_dict[(w_idx, l_idx)][0]
+                                successor = pos_road_dict[(w_idx + 1, l_idx)][-1]
+
+                                connect_road = self.add_connected_road(predecessor=predecessor,
+                                                                       successor=successor,
+                                                                       road_id=road_id,
+                                                                       lane_num=lane_num,
+                                                                       lane_width=lane_width,
+                                                                       reverse=True)
+                                road_id += 1
+                                odr.add_road(connect_road)
+                            else:
+                                pass
+                elif w_idx == self.width_num-1:
+                    if l_idx == self.len_num-1:
+                        if road_net_type_array[w_idx][l_idx] != 0 and road_net_type_array[w_idx-1][l_idx] != 0:
+                            predecessor = pos_road_dict[(w_idx, l_idx)][-1]
+                            successor = pos_road_dict[(w_idx-1, l_idx)][1]
+                            if successor.successor is not None:
+                                successor.successor = None
+                            connect_road = self.add_connected_road(predecessor=predecessor,
+                                                                   successor=successor,
+                                                                   road_id=road_id,
+                                                                   lane_num=0,
+                                                                   lane_width=lane_width,
+                                                                   reverse=True,
+                                                                   right_lane_num=lane_num)
 
 
+                            odr.add_road(connect_road)
+                            road_id += 1
+                        else:
+                            pass
+
+                        if road_net_type_array[w_idx][l_idx] != 0 and road_net_type_array[w_idx][l_idx+1] != 0:
+                            predecessor = pos_road_dict[(w_idx, l_idx)][1]
+                            successor = pos_road_dict[(w_idx, l_idx+1)][1]
+                            if successor.successor is not None:
+                                successor.successor = None
+                            connect_road = self.add_connected_road(predecessor=predecessor,
+                                                                   successor=successor,
+                                                                   road_id=road_id,
+                                                                   lane_num=lane_num,
+                                                                   lane_width=lane_width,
+                                                                   reverse=True,
+                                                                   right_lane_num=0)
+
+                            odr.add_road(connect_road)
+                            road_id += 1
+                        else:
+                            pass
+                    elif l_idx == self.len_num:
+                        if road_net_type_array[w_idx+1][l_idx] != 0:
+                            predecessor = pos_road_dict[(w_idx, l_idx)][0]
+                            successor = pos_road_dict[(w_idx+1, l_idx)][0]
+
+                            connect_road = self.add_connected_road(predecessor=predecessor,
+                                                                   successor=successor,
+                                                                   road_id=road_id,
+                                                                   lane_num=lane_num,
+                                                                   lane_width=lane_width,
+                                                                   reverse=True)
+                            odr.add_road(connect_road)
+                            road_id += 1
 
 
         odr.adjust_roads_and_lanes()
@@ -827,12 +976,13 @@ class RoadNetworkGenerator(ScenarioGenerator):
                            road_id: int,
                            lane_num: int,
                            lane_width: float,
-                           reverse: bool = False) -> Road:
+                           reverse: bool = False,
+                           right_lane_num: Optional[int] = None) -> Road:
 
         connect_road = create_road(geometry=AdjustablePlanview(10),
                                    id=road_id,
                                    left_lanes=lane_num,
-                                   right_lanes=lane_num,
+                                   right_lanes=lane_num if right_lane_num is None else right_lane_num,
                                    lane_width=lane_width)
         connect_road.add_predecessor(element_type=ElementType.road,
                                      element_id=predecessor.id,
