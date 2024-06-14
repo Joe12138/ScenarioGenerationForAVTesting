@@ -189,7 +189,7 @@ class ForkRoad:
 
         junction = CommonJunctionCreator(id=self.junction_id,
                                          name=self.junction_name,
-                                         startnum=self.junction_id*100)
+                                         startnum=self.junction_id*1000000)
 
         junction.add_incoming_road_cartesian_geometry(road=road_start,
                                                       x=self.center_x-self.junction_radius,

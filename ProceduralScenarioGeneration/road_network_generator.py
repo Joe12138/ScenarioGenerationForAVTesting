@@ -83,9 +83,9 @@ class RoadNetworkGenerator(ScenarioGenerator):
     def __init__(self,
                  urban_shape: str = "rectangle",
                  width: float = 300*2*8,
-                 length: float = 500*2*12,
-                 len_interval: float = 500,
-                 width_interval: float = 300,
+                 length: float = 500*2*8,
+                 len_interval: float = 200,
+                 width_interval: float = 120,
                  diff_dist: float = 50):
         super().__init__()
         self.urban_shape = urban_shape

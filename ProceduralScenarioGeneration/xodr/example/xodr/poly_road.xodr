@@ -1,5 +1,5 @@
 <OpenDRIVE>
-    <header name="straight" revMajor="1" revMinor="5" date="2024-04-24 16:09:15.040471" north="0.0" south="0.0" east="0.0" west="0.0"/>
+    <header name="straight" revMajor="1" revMinor="5" date="2024-05-10 16:25:59.708907" north="0.0" south="0.0" east="0.0" west="0.0"/>
     <road rule="RHT" id="1" junction="-1" length="75">
         <link/>
         <planView>
@@ -12,10 +12,19 @@
         <lanes>
             <laneSection s="0">
                 <left>
-                    <lane id="3" type="driving" level="false">
+                    <lane id="4" type="driving" level="false">
                         <link/>
                         <width a="3.2" b="0" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                    <lane id="3" type="driving" level="false">
+                        <link/>
+                        <width a="3.2" b="0" c="0" d="0" sOffset="0"/>
+                        <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2">
+                            <type name="broken" width="0.2">
+                                <line length="3" space="9" tOffset="0" width="0.15" sOffset="0"/>
+                            </type>
+                        </roadMark>
                     </lane>
                     <lane id="2" type="driving" level="false">
                         <link/>

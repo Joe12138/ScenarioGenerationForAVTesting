@@ -17,25 +17,10 @@ class Intersection(ScenarioGenerator):
     def road(self, **kwargs):
         odr = OpenDrive("simple_merge")
         
-        merge_obj = SimpleMergeToLessRoad(road_id=1,
-                                          x_start=0,
-                                          y_start=0,
-                                          h_start=np.pi/2,
-                                          left_lane_num=4,
-                                          right_lane_num=4,
-                                          center_lane_mark=None,
-                                          center_lane_width=3.2,
-                                          left_lane_width=3.2,
-                                          right_lane_width=3.2,
-                                          lane_length=150,
-                                          both_side_merge=False,
-                                          left_side_merge=False,
-                                          right_side_merge=False,
-                                          lane_type="straight")
-        # merge_obj = SimpleMergeToMoreRoad(road_id=1,
+        # merge_obj = SimpleMergeToLessRoad(road_id=1,
         #                                   x_start=0,
         #                                   y_start=0,
-        #                                   h_start=0,
+        #                                   h_start=np.pi/2,
         #                                   left_lane_num=4,
         #                                   right_lane_num=4,
         #                                   center_lane_mark=None,
@@ -47,6 +32,21 @@ class Intersection(ScenarioGenerator):
         #                                   left_side_merge=False,
         #                                   right_side_merge=False,
         #                                   lane_type="spiral")
+        merge_obj = SimpleMergeToMoreRoad(road_id=1,
+                                          x_start=0,
+                                          y_start=0,
+                                          h_start=0,
+                                          left_lane_num=4,
+                                          right_lane_num=4,
+                                          center_lane_mark=None,
+                                          center_lane_width=3.2,
+                                          left_lane_width=3.2,
+                                          right_lane_width=3.2,
+                                          lane_length=150,
+                                          both_side_merge=False,
+                                          left_side_merge=False,
+                                          right_side_merge=False,
+                                          lane_type="straight")
         
         road = merge_obj.road_generation()
         
@@ -61,7 +61,13 @@ class Intersection(ScenarioGenerator):
     
     
 if __name__ == "__main__":
+    import os
     sce = Intersection()
     prettyprint(sce.road().get_element())
     
-    sce.generate("/home/joelan/Desktop/ADTesting/ScenarioGenerationForAVTesting/ProceduralScenarioGeneration/xodr/example/")
+    # sce.generate("/home/joelan/Desktop/ADTesting/ScenarioGenerationForAVTesting/ProceduralScenarioGeneration/xodr/example/")
+    save_path = "/home/joelan/Desktop/ADTesting/ScenarioGenerationForAVTesting/ProceduralScenarioGeneration/xodr/example"
+    sce.generate(save_path)
+
+    os.rename(os.path.join(save_path, "xodr", "merge_example0.xodr"),
+                os.path.join(save_path, "xodr", "merge_to_more.xodr"))

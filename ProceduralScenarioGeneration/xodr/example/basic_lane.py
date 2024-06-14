@@ -40,7 +40,7 @@ class BasicLane(ScenarioGenerator):
                                 y_start=0,
                                 h_start=0,
                                 lane_length=75,
-                                left_lane_num=3,
+                                left_lane_num=4,
                                 right_lane_num=3,
                                 x_poly_para=(0, 1, -1e-3, 3e-4),
                                 y_poly_para=(0, 1, 1e-4, -5e-6))

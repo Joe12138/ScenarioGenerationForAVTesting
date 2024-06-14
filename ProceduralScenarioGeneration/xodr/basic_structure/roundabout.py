@@ -241,7 +241,7 @@ class Roundabout:
             
             junction = CommonJunctionCreator(id=self.junction_start_id+idx,
                                              name=self.junction_name+"_"+str(idx),
-                                             startnum=100*(self.junction_start_id+idx))
+                                             startnum=100000*(self.junction_start_id+idx))
             junction_list.append(junction)
         
         connected_road_id_list = list()

@@ -1,6 +1,6 @@
 import sys
-# sys.path.append("/home/joelan/Desktop/ADTesting/ScenarioGenerationForAVTesting/ProceduralScenarioGeneration/")
-sys.path.append("E:\\ScenarioGenerationTesting\\ScenarioGenerationForAVTesting\\ProceduralScenarioGeneration\\")
+sys.path.append("/home/joelan/Desktop/ADTesting/ScenarioGenerationForAVTesting/ProceduralScenarioGeneration/")
+# sys.path.append("E:\\ScenarioGenerationTesting\\ScenarioGenerationForAVTesting\\ProceduralScenarioGeneration\\")
 from xodr.scenario_generator import ScenarioGenerator
 from xodr.opendrive.open_drive import OpenDrive
 from xodr.basic_structure.fork import ForkRoad
@@ -17,15 +17,20 @@ class ForkScene(ScenarioGenerator):
 
         fork_obj = ForkRoad(center_x=0,
                             center_y=0,
+                            h_start=0,
                             lane_num=3,
                             lane_width=3.2,
                             start_road_id=1,
                             junction_radius=15,
                             enter_len=20,
-                            lane_len_list=[50, 50, 50],
+                            lane_len_list=[50, 80, 50],
                             split_lane_num=[3, 3],
-                            lane_type="straight",
+                            lane_type="arc",
+                            curvature=-0.003,
+                            curv_start=0.003,
+                            curv_end=0.009,
                             heading_list=[0, np.pi/2, np.pi],
+                            lane_type_list=["straight", "arc", "spiral"],
                             reverse=False,
                             right_side=False)
 
@@ -41,11 +46,14 @@ class ForkScene(ScenarioGenerator):
 
 
 if __name__ == "__main__":
+    import os
     sce = ForkScene()
     prettyprint(sce.road().get_element())
 
     # sce.generate(
     #     "/home/joelan/Desktop/ADTesting/ScenarioGenerationForAVTesting/ProceduralScenarioGeneration/xodr/example/")
-    
-    sce.generate("E:\\ScenarioGenerationTesting\\ScenarioGenerationForAVTesting\\ProceduralScenarioGeneration\\xodr\\example\\")
+    save_path = "/home/joelan/Desktop/ADTesting/ScenarioGenerationForAVTesting/ProceduralScenarioGeneration/xodr/example"
+    sce.generate(save_path)
 
+    os.rename(os.path.join(save_path, "xodr", "fork_example0.xodr"),
+                os.path.join(save_path, "xodr", "fork_arc.xodr"))
