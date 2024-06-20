@@ -32,16 +32,15 @@ class BlockGeenrator(ScenarioGenerator):
                  seed: int = 10):
         super().__init__()
         self.block_num = block_num
-        self.random_seed = 0
-        
-        self.road_type_list = ["StraightRoad", "ArcRoad", "SpiralRoad", "Intersection", "Roundabout",
-                               "ForkRoad", "MergeRoadToLess", "MergeRoadToMore"]
-        self.road_type_list.remove("MergeRoadToLess")
-        self.road_type_list.remove("MergeRoadToMore")
-        
+        self.random_seed = seed
+
         self.set_random_seed(seed)
         # self.set_random_seed(102)
-        
+        self.road_type_list = ["StraightRoad", "ArcRoad", "SpiralRoad", "Intersection", "Roundabout",
+                               "ForkRoad"]
+        self.idx_type_dict = {i: item for i, item in enumerate(self.road_type_list)}
+
+        self.set_random_seed(seed=self.random_seed)
         
     def set_random_seed(self, seed: Optional[int] = 0):
         if seed is not None:
@@ -103,123 +102,110 @@ class BlockGeenrator(ScenarioGenerator):
             x_start += x_offset
             y_start += y_offset
         return x_start, y_start
-    
-    def road(self, **kwargs):
-        odr = OpenDrive("road_block")
-        para_list = []
-        road_id = 1
-        x_start = 0
-        y_start = 0
-        x_interval = 100
-        y_interval = 80
-        road_obj_list = []
-        direction_list = ["up", "down", "right"]
-        for _ in range(self.block_num):
-            road_type = self.get_road_type(last_road_type=None if len(para_list) == 0 else list(para_list[-1].keys())[0])
-            # print(road_type)
+
+    def get_candidate_position(self, selected_pos: list[tuple[int, int]])->list[tuple[int, int]]:
+        if len(selected_pos) == 0:
+            return [(self.block_num, self.block_num)]
+        else:
+            candidate_pos_list = []
+            for item in selected_pos:
+                if (item[0]-1, item[1]) not in selected_pos:
+                    candidate_pos_list.append((item[0]-1, item[1]))
+                if (item[0]+1, item[1]) not in selected_pos:
+                    candidate_pos_list.append((item[0]+1, item[1]))
+                if (item[0], item[1]-1) not in selected_pos:
+                    candidate_pos_list.append((item[0], item[1]-1))
+                if (item[0], item[1]+1) not in selected_pos:
+                    candidate_pos_list.append((item[0], item[1]+1))
+            return candidate_pos_list
+
+    def generate_block_shape(self):
+        selected_pos = list()
+        pos_type_dict = dict()
+        pos_array = np.ones(shape=(self.block_num * 2 + 1, self.block_num * 2 + 1), dtype=int)
+        pos_array *= -1
+        for i in range(self.block_num):
+            candidate_pos_list = self.get_candidate_position(selected_pos=selected_pos)
+            random_index = random.randint(0, len(candidate_pos_list)-1)
+            candidate_pos = candidate_pos_list[random_index]
+            selected_pos.append(candidate_pos)
+            selected_type = random.randint(0, len(self.road_type_list)-1)
+            pos_array[candidate_pos[0]][candidate_pos[1]] = selected_type
+            pos_type_dict[(candidate_pos[0], candidate_pos[1])] = selected_type
+        return pos_array, pos_type_dict
+
+    def generate_road_type(self, xodr, pos_type_dict, pos_road_dict, pos_para_dict):
+        road_id = 100
+        x_interval, y_interval = 500, 400
+        # pos_type_dict.clear()
+        for position, road_type_idx in pos_type_dict.items():
+            road_type = self.idx_type_dict[road_type_idx]
             if road_type == "StraightRoad":
-                h_start = random.uniform(0, np.pi/2)
-                lane_num = random.randint(4, 4)
+                h_start = random.uniform(3 * np.pi/2, 13 * np.pi / 6)
+                lane_num = 4
                 lane_length = random.randint(150, 250)
-                
+
                 road = StraightRoad(road_id=road_id,
-                                    x_start=x_start,
-                                    y_start=y_start,
+                                    x_start=position[0]*x_interval,
+                                    y_start=position[1]*y_interval,
                                     h_start=h_start,
                                     left_lane_num=lane_num,
                                     right_lane_num=lane_num,
                                     lane_length=lane_length)
-                
                 road_obj = road.road_generation()
-                odr.add_road(copy.deepcopy(road_obj))
-                
-                cur_para_dict = dict()
-                cur_para_dict["x_start"] = x_start
-                cur_para_dict["y_start"] = y_start
-                cur_para_dict["h_start"] = h_start
-                cur_para_dict["lane_num"] = lane_num
-                cur_para_dict["lane_length"] = lane_length
-                cur_para_dict["road_id"] = road_id
-                
-                para_list.append({"StrightRoad": cur_para_dict})
-                
-                road_id += 1 +3
-                x_start += lane_length*np.cos(h_start)
-                y_start += lane_length*np.sin(h_start)
-                
-                if len(para_list) == 0 or list(para_list[-1].keys())[0] in ["StraightRoad", "ArcRoad", "SpiralRoad", "ForkRoad"]:
-                    prob = random.random()
-                    if prob < 0.5:
-                        x_start += x_interval
-                        y_start += y_interval
-                    else:
-                        x_start -= x_interval
-                        y_start -= y_interval
-                else:
-                    x_start, y_start = self.get_offset(pos=random.choice(direction_list),
-                                                       x_start=x_start,
-                                                       y_start=y_start,
-                                                       x_offset=x_interval,
-                                                       y_offset=y_interval)
-                
-                road_obj_list.append(road_obj)
+                xodr.add_road(road_obj)
+
+                para_dict = dict()
+                para_dict["x_start"] = position[0]*x_interval
+                para_dict["y_start"] = position[1]*y_interval
+                para_dict["h_start"] = h_start
+                para_dict["lane_num"] = lane_num
+                para_dict["lane_length"] = lane_length
+                para_dict["road_id"] = road_id
+                para_dict["road_type"] = road_type
+                pos_para_dict[position] = para_dict
+                pos_road_dict[position] = road_obj
+                road_id += 1
             elif road_type == "ArcRoad":
-                h_start = random.uniform(0, np.pi/2)
-                lane_num = random.randint(4, 4)
+                h_start = random.uniform(3 * np.pi/2, 13 * np.pi / 6)
+                lane_num = 4
                 lane_length = random.randint(150, 250)
                 curvature = 0.00085
+
                 road = ArcRoad(road_id=road_id,
-                               x_start=x_start,
-                               y_start=y_start,
+                               x_start=position[0]*x_interval,
+                               y_start=position[1]*y_interval,
                                h_start=h_start,
                                left_lane_num=lane_num,
                                right_lane_num=lane_num,
                                lane_length=lane_length,
                                curvature=curvature)
                 road_obj = road.road_generation()
-                odr.add_road(copy.deepcopy(road_obj))
-                
-                cur_para_dict = dict()
-                cur_para_dict["x_start"] = x_start
-                cur_para_dict["y_start"] = y_start
-                cur_para_dict["h_start"] = h_start
-                cur_para_dict["lane_num"] = lane_num
-                cur_para_dict["lane_length"] = lane_length
-                cur_para_dict["curvature"] = curvature
-                cur_para_dict["road_id"] = road_id
-                
-                para_list.append({"ArcRoad": cur_para_dict})
-                
-                road_id += 1 + 3
-                x_start, y_start = self.get_arc_end_data(x=x_start,
-                                                         y=y_start,
-                                                         h=h_start,
-                                                         curvature=curvature,
-                                                         length=lane_length)
-                if len(para_list) == 0 or list(para_list[-1].keys())[0] in ["StraightRoad", "ArcRoad", "SpiralRoad", "ForkRoad"]:
-                    prob = random.random()
-                    if prob < 0.5:
-                        x_start += x_interval
-                        y_start += y_interval
-                    else:
-                        x_start -= x_interval
-                        y_start -= y_interval
-                else:
-                    x_start, y_start = self.get_offset(pos=random.choice(direction_list),
-                                                       x_start=x_start,
-                                                       y_start=y_start,
-                                                       x_offset=x_interval,
-                                                       y_offset=y_interval)
-                road_obj_list.append(road_obj)
+                xodr.add_road(road_obj)
+
+                para_dict = dict()
+                para_dict["x_start"] = position[0]*x_interval
+                para_dict["y_start"] = position[1]*y_interval
+                para_dict["h_start"] = h_start
+                para_dict["lane_num"] = lane_num
+                para_dict["lane_length"] = lane_length
+                para_dict["curvature"] = curvature
+                para_dict["road_id"] = road_id
+                para_dict["road_type"] = road_type
+                pos_para_dict[position] = para_dict
+                pos_road_dict[position] = road_obj
+
+                road_id += 1
             elif road_type == "SpiralRoad":
-                h_start = random.uniform(0, np.pi/2)
-                lane_num = random.randint(4, 4)
+                h_start = random.uniform(3 * np.pi/2, 13 * np.pi / 6)
+                lane_num = 4
                 lane_length = random.randint(150, 250)
                 start_curvature = 0.00075
                 end_curvature = 0.00275
+
                 road = SpiralRoad(road_id=road_id,
-                                  x_start=x_start,
-                                  y_start=y_start,
+                                  x_start=position[0]*x_interval,
+                                  y_start=position[1]*y_interval,
                                   h_start=h_start,
                                   left_lane_num=lane_num,
                                   right_lane_num=lane_num,
@@ -227,52 +213,35 @@ class BlockGeenrator(ScenarioGenerator):
                                   curvature_start=start_curvature,
                                   curvature_end=end_curvature)
                 road_obj = road.road_generation()
-                
-                odr.add_road(copy.deepcopy(road_obj))
-                
-                cur_para_dict = dict()
-                cur_para_dict["x_start"] = x_start
-                cur_para_dict["y_start"] = y_start
-                cur_para_dict["h_start"] = h_start
-                cur_para_dict["lane_num"] = lane_num
-                cur_para_dict["lane_length"] = lane_length
-                cur_para_dict["start_curvature"] = start_curvature
-                cur_para_dict["end_curvature"] = end_curvature
-                cur_para_dict["road_id"] = road_id
-                
-                para_list.append({"SpiralRoad": cur_para_dict})
-                
-                road_id += 1 + 3
-                x_start, y_start = self.get_spiral_end_data(x=x_start,
-                                                            y=y_start,
-                                                            h=h_start,
-                                                            start_curv=start_curvature,
-                                                            end_curv=end_curvature,
-                                                            length=lane_length)
-                if len(para_list) == 0 or list(para_list[-1].keys())[0] in ["StraightRoad", "ArcRoad", "SpiralRoad", "ForkRoad"]:
-                    prob = random.random()
-                    if prob < 0.5:
-                        x_start += x_interval
-                        y_start += y_interval
-                    else:
-                        x_start -= x_interval
-                        y_start -= y_interval
-                else:
-                    x_start, y_start = self.get_offset(pos=random.choice(direction_list),
-                                                       x_start=x_start,
-                                                       y_start=y_start,
-                                                       x_offset=x_interval,
-                                                       y_offset=y_interval)
-                road_obj_list.append(road_obj)
+
+                xodr.add_road(road_obj)
+
+                para_dict = dict()
+                para_dict["x_start"] = position[0]*x_interval
+                para_dict["y_start"] = position[1]*y_interval
+                para_dict["h_start"] = h_start
+                para_dict["lane_num"] = lane_num
+                para_dict["lane_length"] = lane_length
+                para_dict["start_curvature"] = start_curvature
+                para_dict["end_curvature"] = end_curvature
+                para_dict["road_id"] = road_id
+                para_dict["road_type"] = road_type
+
+                pos_para_dict[position] = para_dict
+                pos_road_dict[position] = road_obj
+
+                road_id += 1
             elif road_type == "Intersection":
                 enter_lane_len = random.randint(80, 120)
                 inter_radius = random.randint(20, 45)
-                center_x = x_start+enter_lane_len+inter_radius
-                center_y = y_start
-                lane_num = random.randint(4, 4)
+                center_x = position[0]*x_interval+enter_lane_len+inter_radius
+                center_y = position[1]*y_interval
+
+                lane_num = 4
                 turn_mode = random.choice(["one-to-one", "one-to-more"])
                 num_intersection = random.randint(3, 4)
-                direct_connect = True if random.random() <= 0.5 else False
+                direct_connect = True
+
                 road = IntersectionWithEqualLaneNum(center_x=center_x,
                                                     center_y=center_y,
                                                     lane_num=lane_num,
@@ -280,60 +249,43 @@ class BlockGeenrator(ScenarioGenerator):
                                                     lane_length=enter_lane_len,
                                                     road_id_start=road_id,
                                                     radius=inter_radius,
-                                                    junction_id=road_id*100000 if road_id != 0 else 100,
+                                                    junction_id=road_id*100000 if road_id != 0 else 100000,
                                                     turn_mode=turn_mode,
                                                     direct_connect=direct_connect,
                                                     num_intersection=num_intersection,
                                                     t_intersection=True if num_intersection == 3 else False)
+
                 road_list, jc = road.intersection_generator()
                 for road_obj in road_list:
-                    odr.add_road(road_obj)
-                    
-                odr.add_junction_creator(jc)
+                    xodr.add_road(road_obj)
+                xodr.add_junction_creator(jc)
                 
-                cur_para_dict = dict()
-                cur_para_dict["center_x"] = center_x
-                cur_para_dict["center_y"] = center_y
-                cur_para_dict["lane_num"] = lane_num
-                cur_para_dict["lane_length"] = enter_lane_len
-                cur_para_dict["radius"] = inter_radius
-                cur_para_dict["turn_mode"] = turn_mode
-                cur_para_dict["direct_connet"] = direct_connect
-                cur_para_dict["num_intersection"] = num_intersection
-                cur_para_dict["road_id"] = road_id
+                para_dict = dict()
+                para_dict["center_x"] = center_x
+                para_dict["center_y"] = center_y
+                para_dict["lane_num"] = lane_num
+                para_dict["lane_length"] = enter_lane_len
+                para_dict["radius"] = inter_radius
+                para_dict["turn_mode"] = turn_mode
+                para_dict["direct_connect"] = direct_connect
+                para_dict["num_intersection"] = num_intersection
+                para_dict["road_id"] = road_id
+                para_dict["road_type"] = road_type
                 
-                
-                
-                road_id += num_intersection*2 + 1000
-                random_value = random.random()
-                # print("random_value = {}".format(random_value))
-                if random_value < 0.33:
-                    x_start = center_x + inter_radius + enter_lane_len
-                    y_start = center_y
-                    x_start += x_interval
-                    y_start += y_interval
-                    cur_para_dict["road_index"] = 0
-                elif random_value < 0.66:
-                    x_start = center_x
-                    y_start = center_y + inter_radius + enter_lane_len
-                    x_start += x_interval
-                    y_start += y_interval
-                else:
-                    x_start = center_x
-                    y_start = center_y - inter_radius - enter_lane_len
-                    x_start += x_interval
-                    y_start -= y_interval
-                
-                para_list.append({"Intersection": cur_para_dict})
-                road_obj_list.append(road_list)
+                road_id += num_intersection*2
+
+                pos_para_dict[position] = para_dict
+                pos_road_dict[position] = road_list
             elif road_type == "Roundabout":
                 enter_lane_len = random.randint(80, 120)
                 junction_radius = random.randint(15, 30)
                 radius = random.randint(40, 80)
-                center_x = x_start + enter_lane_len + junction_radius + radius
-                center_y = y_start
+
+                center_x = position[0] * x_interval + enter_lane_len + junction_radius + radius
+                center_y = position[1] * y_interval
                 num_intersection = random.randint(3, 4)
-                lane_num = random.randint(4, 4)
+                lane_num = 4
+                
                 road = Roundabout(center_x=center_x,
                                   center_y=center_y,
                                   enter_lane_num=lane_num,
@@ -345,51 +297,40 @@ class BlockGeenrator(ScenarioGenerator):
                                   num_intersection=num_intersection,
                                   radius=radius,
                                   junction_radius=junction_radius,
-                                  junction_start_id=100000*road_id if road_id != 0 else 100,
-                                  )
-                
+                                  junction_start_id=road_id*100000 if road_id != 0 else 100000)
                 enter_road_list, arc_road_list, junction = road.roundabout_generator()
                 for road_obj in enter_road_list:
-                    odr.add_road(copy.deepcopy(road_obj))
-                
+                    xodr.add_road(copy.deepcopy(road_obj))
+
                 for road_obj in arc_road_list:
-                    odr.add_road(copy.deepcopy(road_obj))
-                
+                    xodr.add_road(copy.deepcopy(road_obj))
+
                 for junction_obj in junction:
-                    odr.add_junction_creator(copy.deepcopy(junction_obj))
-                    
-                cur_para_dict = dict()
-                cur_para_dict["center_x"] = center_x
-                cur_para_dict["center_y"] = center_y
-                cur_para_dict["enter_lane_num"] = lane_num
-                cur_para_dict["arc_lane_num"] = lane_num
-                cur_para_dict["enter_lane_length"] = enter_lane_len
-                cur_para_dict["num_intersection"] = num_intersection
-                cur_para_dict["radius"] = radius
-                cur_para_dict["junction_radius"] = junction_radius
-                cur_para_dict["road_id"] = road_id
-                
-                para_list.append({"Roundabout": cur_para_dict})
-                
-                road_id += len(enter_road_list)+len(arc_road_list)+len(junction)+1000
-                random_value = random.random()
-                # print("random_value = {}".format(random_value))
-                if random_value < 0.33:
-                    x_start = center_x + radius + junction_radius + enter_lane_len + x_interval
-                    y_start = center_y + y_interval
-                elif random_value < 0.66:
-                    x_start = center_x + x_interval
-                    y_start = center_y + radius + junction_radius + enter_lane_len + y_interval
-                else:
-                    y_start = center_y - (radius + junction_radius + enter_lane_len + y_interval)
-                road_obj_list.append(enter_road_list)
+                    xodr.add_junction_creator(copy.deepcopy(junction_obj))
+
+                para_dict = dict()
+                para_dict["center_x"] = center_x
+                para_dict["center_y"] = center_y
+                para_dict["enter_lane_num"] = lane_num
+                para_dict["arc_lane_num"] = lane_num
+                para_dict["enter_lane_length"] = enter_lane_len
+                para_dict["num_intersection"] = num_intersection
+                para_dict["radius"] = radius
+                para_dict["junction_radius"] = junction_radius
+                para_dict["road_id"] = road_id
+                para_dict["road_type"] = road_type
+
+                road_id += len(enter_road_list) + len(arc_road_list)
+
+                pos_para_dict[position] = para_dict
+                pos_road_dict[position] = enter_road_list
             elif road_type == "ForkRoad":
                 lane_length = random.randint(80, 120)
                 junction_radius = random.randint(30, 50)
-                
-                center_x = x_start + lane_length + junction_radius
-                center_y = y_start
-                lane_num = random.randint(4, 4)
+                center_x = position[0]*x_interval + lane_length + junction_radius
+                center_y = position[1]*y_interval
+
+                lane_num = 4
                 road = ForkRoad(center_x=center_x,
                                 center_y=center_y,
                                 h_start=0,
@@ -397,134 +338,293 @@ class BlockGeenrator(ScenarioGenerator):
                                 lane_width=3.2,
                                 start_road_id=road_id,
                                 junction_radius=junction_radius,
-                                junction_id=100000*road_id if road_id != 0 else 100,
+                                junction_id=100000*road_id if road_id != 0 else 100000,
                                 lane_len_list=[lane_length]*3)
-                
+
                 road_list, junction = road.fork_generator()
                 for road_obj in road_list:
-                    odr.add_road(copy.deepcopy(road_obj))
-                odr.add_junction_creator(copy.deepcopy(junction))
-                
-                cur_para_dict = dict()
-                cur_para_dict["center_x"] = center_x
-                cur_para_dict["center_y"] = center_y
-                cur_para_dict["lane_num"] = lane_num
-                cur_para_dict["lane_length"] = lane_length
-                cur_para_dict["junction_radius"] = junction_radius
-                cur_para_dict["road_id"] = road_id
-                
-                para_list.append({"ForkRoad": cur_para_dict})
-                
-                
-                road_id += len(road_list) + 10000
-                x_start = center_x + junction_radius + lane_length*1.5 + x_interval
-                y_start = center_y + y_interval
-                road_obj_list.append(road_list)
-            # elif road_type == "MergeRoadToLess":
-            #     road = SimpleMergeToLessRoad()
-            # elif road_type == "MergeRoadToMore":
-            #     road = SimpleMergeToMoreRoad()
+                    xodr.add_road(copy.deepcopy(road_obj))
+                xodr.add_junction_creator(copy.deepcopy(junction))
+
+                para_dict = dict()
+                para_dict["center_x"] = center_x
+                para_dict["center_y"] = center_y
+                para_dict["lane_num"] = lane_num
+                para_dict["lane_length"] = lane_length
+                para_dict["junction_radius"] = junction_radius
+                para_dict["road_id"] = road_id
+                para_dict["road_type"] = road_type
+
+                pos_para_dict[position] = para_dict
+                pos_road_dict[position] = road_list
+
+                road_id += len(road_list)
             else:
                 raise ValueError("Invalid road type")
-            # road.generate()
-            # odr.add_road(road)
-            
-        # for i in range(1, len(para_list)):
-        #     last_road_para = para_list[i-1]
-        #     next_road_para = para_list[i]
-            
-        #     last_road_type = list(last_road_para.keys())[0]
-        #     next_road_type = list(next_road_para.keys())[0]
-            
-        #     # print("last = {}, next = {}".format(last_road_type, next_road_type))
-            
-        #     if last_road_type == "ForkRoad":
-        #         connect_road = create_road(geometry=AdjustablePlanview(10),
-        #                                 id=road_id+i,
-        #                                 left_lanes=4,
-        #                                 right_lanes=0,
-        #                                 lane_width=3.2)
-        #     else:
-        #         connect_road = create_road(geometry=AdjustablePlanview(10),
-        #                                 id=road_id+i,
-        #                                 left_lanes=4,
-        #                                 right_lanes=4,
-        #                                 lane_width=3.2)
-            
-        #     pre_road_id = last_road_para[last_road_type]["road_id"]
-        #     suc_road_id = next_road_para[next_road_type]["road_id"]
-        #     if next_road_type == "Intersection":
-        #         # if next_road_para["num_intersection"] == 3:
-        #         suc_road_id += 2
-        #     elif next_road_type == "Roundabout":
-        #         suc_road_id += 4
-        #     # elif next_road_type == "ForkRoad":
-        #     #     suc_road_id += 1
-        #     if last_road_type == "ForkRoad":
-        #         pre_road_id += 1
-                
-        #     if last_road_type == "ForkRoad":
-        #         pre_road = road_obj_list[i-1][1]
-        #     elif last_road_type == "Intersection" or last_road_type == "Roundabout":
-        #         pre_road = road_obj_list[i-1][0]
-        #     else:
-        #         pre_road = road_obj_list[i-1]
-                
-        #     if next_road_type == "ForkRoad":
-        #         suc_road = road_obj_list[i][0]
-        #     elif next_road_type == "Intersection" or next_road_type == "Roundabout":
-        #         suc_road = road_obj_list[i][2]
-        #     else:
-        #         suc_road = road_obj_list[i]
-                
-        #     # print("pre_road_id = {}, succ_road_id = {}".format(pre_road.id, suc_road.id))
-                
-        #     reverse = True if next_road_type == "ForkRoad" or next_road_type == "Intersection" or next_road_type == "Roundabout" else False
-                         
-        #     connect_road.add_predecessor(element_id=pre_road_id,
-        #                                  element_type=ElementType.road,
-        #                                  contact_point=ContactPoint.end)
-        #     connect_road.add_successor(element_id=suc_road_id,
-        #                                 element_type=ElementType.road,
-        #                                 contact_point=ContactPoint.start if not reverse else ContactPoint.end)
-        #     if pre_road.successor is not None:
-        #         pre_road.successor = None
-        #     pre_road.add_successor(element_type=ElementType.road,
-        #                            element_id=road_id+i,
-        #                            contact_point=ContactPoint.start)
-        #     # print(next_road_type)
-        #     # print(suc_road)
-        #     suc_road.add_successor(element_type=ElementType.road,
-        #                         element_id=road_id+i,
-        #                         contact_point=ContactPoint.end)
-            
-        #     odr.add_road(connect_road)
-            
+        return xodr, road_id
+
+    def connect_two_roads(self,
+                          road_id: int,
+                          start_road,
+                          end_road,
+                          start_road_type: str,
+                          # end_road_type: str,
+                          odr):
+        if start_road_type == "ForkRoad":
+            left_connect_road = create_road(geometry=AdjustablePlanview(10),
+                                       id=road_id,
+                                       left_lanes=4,
+                                       right_lanes=0,
+                                       lane_width=3.2)
+            # right_connect_road = create_road(geometry=AdjustablePlanview(10),
+            #                                  id=road_id+1,
+            #                                  left_lanes=0,
+            #                                  right_lanes=4,
+            #                                  lane_width=3.2)
+            left_connect_road.add_predecessor(element_id=start_road.id,
+                                              element_type=ElementType.road,
+                                              contact_point=ContactPoint.end)
+            left_connect_road.add_successor(element_id=end_road.id,
+                                            element_type=ElementType.road,
+                                            contact_point=ContactPoint.end)
+
+            # right_connect_road.add_predecessor(element_id=start_road.road_id,
+            #                                    element_type=ElementType.road,
+            #                                    contact_point=ContactPoint.start)
+            # right_connect_road.add_successor(element_id=end_road.road_id,
+            #                                 element_type=ElementType.road,
+            #                                 contact_point=ContactPoint.end)
+            if start_road.successor is not None:
+                start_road.successor = None
+            start_road.add_successor(element_type=ElementType.road,
+                                     element_id=road_id,
+                                     contact_point=ContactPoint.start)
+
+            if end_road.successor is not None:
+                end_road.successor = None
+            end_road.add_successor(element_type=ElementType.road,
+                                     element_id=road_id,
+                                     contact_point=ContactPoint.end)
+            odr.add_road(left_connect_road)
+        else:
+            connect_road = create_road(geometry=AdjustablePlanview(10),
+                                       id=road_id,
+                                       left_lanes=4,
+                                       right_lanes=4,
+                                       lane_width=3.2)
+
+            connect_road.add_predecessor(element_id=start_road.id,
+                                          element_type=ElementType.road,
+                                          contact_point=ContactPoint.end)
+            connect_road.add_successor(element_id=end_road.id,
+                                        element_type=ElementType.road,
+                                        contact_point=ContactPoint.end)
+
+            if start_road.successor is not None:
+                start_road.successor = None
+            start_road.add_successor(element_type=ElementType.road,
+                                     element_id=road_id,
+                                     contact_point=ContactPoint.start)
+
+            if end_road.successor is not None:
+                end_road.successor = None
+            end_road.add_successor(element_type=ElementType.road,
+                                     element_id=road_id,
+                                     contact_point=ContactPoint.end)
+
+            odr.add_road(connect_road)
+
+    def connect_two_roads_vertical(self,
+                          road_id: int,
+                          start_road,
+                          end_road,
+                          start_road_type: str,
+                          # end_road_type: str,
+                          odr):
+        if start_road_type == "ForkRoad":
+            left_connect_road = create_road(geometry=AdjustablePlanview(10),
+                                       id=road_id,
+                                       left_lanes=4,
+                                       right_lanes=0,
+                                       lane_width=3.2)
+            # right_connect_road = create_road(geometry=AdjustablePlanview(10),
+            #                                  id=road_id+1,
+            #                                  left_lanes=0,
+            #                                  right_lanes=4,
+            #                                  lane_width=3.2)
+            left_connect_road.add_predecessor(element_id=start_road.id,
+                                              element_type=ElementType.road,
+                                              contact_point=ContactPoint.end)
+            left_connect_road.add_successor(element_id=end_road.id,
+                                            element_type=ElementType.road,
+                                            contact_point=ContactPoint.start)
+
+            # right_connect_road.add_predecessor(element_id=start_road.road_id,
+            #                                    element_type=ElementType.road,
+            #                                    contact_point=ContactPoint.start)
+            # right_connect_road.add_successor(element_id=end_road.road_id,
+            #                                 element_type=ElementType.road,
+            #                                 contact_point=ContactPoint.end)
+            if start_road.successor is not None:
+                start_road.successor = None
+            start_road.add_successor(element_type=ElementType.road,
+                                     element_id=road_id,
+                                     contact_point=ContactPoint.start)
+
+            if end_road.successor is not None:
+                end_road.successor = None
+            end_road.add_successor(element_type=ElementType.road,
+                                     element_id=road_id,
+                                     contact_point=ContactPoint.end)
+            odr.add_road(left_connect_road)
+        else:
+            connect_road = create_road(geometry=AdjustablePlanview(10),
+                                       id=road_id,
+                                       left_lanes=4,
+                                       right_lanes=4,
+                                       lane_width=3.2)
+
+            connect_road.add_predecessor(element_id=start_road.id,
+                                          element_type=ElementType.road,
+                                          contact_point=ContactPoint.start)
+            connect_road.add_successor(element_id=end_road.id,
+                                        element_type=ElementType.road,
+                                        contact_point=ContactPoint.end)
+
+            if start_road.successor is not None:
+                start_road.successor = None
+            start_road.add_successor(element_type=ElementType.road,
+                                     element_id=road_id,
+                                     contact_point=ContactPoint.start)
+
+            if end_road.successor is not None:
+                end_road.successor = None
+            end_road.add_successor(element_type=ElementType.road,
+                                     element_id=road_id,
+                                     contact_point=ContactPoint.end)
+
+            odr.add_road(connect_road)
+
+    def connection(self, xodr, road_id, start_road_obj, end_road_obj, start_road_para_dict, end_road_pare_dict, connect_type: str):
+        if connect_type == "horizon":
+            if start_road_para_dict["road_type"] in ["StraightRoad", "ArcRoad", "SpiralRoad"]:
+                start_road = start_road_obj
+            elif start_road_para_dict["road_type"] in ["Intersection", "Roundabout"]:
+                start_road = start_road_obj[0]
+            elif start_road_para_dict["road_type"] == "ForkRoad":
+                start_road = start_road_obj[1]
+
+            if end_road_pare_dict["road_type"] in ["StraightRoad", "ArcRoad", "SpiralRoad"]:
+                end_road = end_road_obj
+            elif end_road_pare_dict["road_type"] in ["Intersection", "Roundabout"]:
+                end_road = end_road_obj[-2]
+            elif end_road_pare_dict["road_type"] == "ForkRoad":
+                end_road = end_road_obj[0]
+
+            self.connect_two_roads(road_id=road_id,
+                                   start_road=start_road,
+                                   end_road=end_road,
+                                   start_road_type=start_road_para_dict["road_type"],
+                                   odr=xodr)
+            road_id += 1
+        elif connect_type == "vertical":
+            if start_road_para_dict["road_type"] in ["StraightRoad", "ArcRoad", "SpiralRoad"]:
+                start_road = start_road_obj
+            elif start_road_para_dict["road_type"] in ["Intersection", "Roundabout"]:
+                start_road = start_road_obj[0]
+            elif start_road_para_dict["road_type"] == "ForkRoad":
+                start_road = start_road_obj[-1]
+
+            if end_road_pare_dict["road_type"] in ["StraightRoad", "ArcRoad", "SpiralRoad"]:
+                end_road = end_road_obj
+            elif end_road_pare_dict["road_type"] in ["Intersection", "Roundabout"]:
+                end_road = end_road_obj[-1]
+            elif end_road_pare_dict["road_type"] == "ForkRoad":
+                end_road = end_road_obj[-1]
+
+            self.connect_two_roads_vertical(road_id=road_id,
+                                   start_road=start_road,
+                                   end_road=end_road,
+                                   start_road_type=start_road_para_dict["road_type"],
+                                   odr=xodr)
+            road_id += 1
+        return road_id
+
+    def add_connection(self, xodr, road_id, pos_array, pos_para_dict, pos_road_dict):
+        for col_idx in range(self.block_num * 2 + 1):
+            for row_idx in range(self.block_num*2+1):
+                if pos_array[row_idx][col_idx] != -1:
+                    add_idx = 1
+                    last_pos = (row_idx, col_idx)
+                    while row_idx + add_idx < self.block_num*2+1:
+                        if pos_array[row_idx+add_idx][col_idx] != -1:
+                            road_id = self.connection(xodr=xodr,
+                                                road_id=road_id,
+                                                start_road_obj=pos_road_dict[last_pos],
+                                                end_road_obj=pos_road_dict[(row_idx+add_idx, col_idx)],
+                                                start_road_para_dict=pos_para_dict[last_pos],
+                                                end_road_pare_dict=pos_para_dict[(row_idx+add_idx, col_idx)],
+                                                connect_type="horizon")
+                            last_pos = (row_idx+add_idx, col_idx)
+                        add_idx += 1
+                    break
+
+        for row_idx in range(self.block_num*2+1):
+            for col_idx in range(self.block_num*2+1):
+                if pos_array[row_idx][col_idx] != -1:
+                    add_idx = 1
+                    while pos_array[row_idx][col_idx+add_idx] != -1:
+                        if pos_para_dict[(row_idx, col_idx)]["road_type"] == "ForkRoad" or pos_para_dict[(row_idx, col_idx+add_idx)]["road_type"] == "ForkRoad":
+                            add_idx += 1
+                            continue
+                        road_id = self.connection(xodr=xodr,
+                                                  road_id=road_id,
+                                                  start_road_obj=pos_road_dict[(row_idx, col_idx+add_idx-1)],
+                                                  end_road_obj=pos_road_dict[(row_idx, col_idx+add_idx)],
+                                                  start_road_para_dict=pos_para_dict[(row_idx, col_idx+add_idx-1)],
+                                                  end_road_pare_dict=pos_para_dict[(row_idx, col_idx+add_idx)],
+                                                  connect_type="vertical")
+                        add_idx += 1
+
+        return road_id
+
+
+    def road(self, **kwargs):
+        odr = OpenDrive("road_block")
+        pos_road_dict = dict()
+        # pos_type_dict = dict()
+        pos_para_dict = dict()
+        position_array, pos_type_dict = self.generate_block_shape()
+
+        print(position_array)
+        print(self.idx_type_dict)
+        # odr.adjust_roads_and_lanes()
+
+        odr, road_id = self.generate_road_type(xodr=odr,
+                                      pos_type_dict=pos_type_dict,
+                                      pos_road_dict=pos_road_dict,
+                                      pos_para_dict=pos_para_dict)
+
+        road_id = self.add_connection(xodr=odr,
+                                      road_id=road_id,
+                                      pos_array=position_array,
+                                      pos_para_dict=pos_para_dict,
+                                      pos_road_dict=pos_road_dict)
         odr.adjust_roads_and_lanes()
-        
         return odr
 
 
 if __name__ == "__main__":
-    import os
     import time
-    from tqdm import tqdm
     time_list = []
     
     bn = 10
-    
-    for i in tqdm(range(1)):
-        s_t = time.time()
-        road_block = BlockGeenrator(block_num=bn,
-                                        seed=12205)
-        # prettyprint(road_block.generate_block().get_element())
-        save_path = "/home/joelan/Desktop/ADTesting/ScenarioGenerationForAVTesting/ProceduralScenarioGeneration/xodr/example/"
-        road_block.generate(save_path)
-        e_t = time.time()
-    
-        time_list.append(e_t-s_t)
-    
-    print("avg = {}, std = {}".format(np.mean(time_list), np.std(time_list)))
-   
-    # os.rename(os.path.join(save_path, "xodr", "block_generation0.xodr"), os.path.join(save_path, "xodr", "road_vis_block_{}.xodr".format(bn)))
-    # print("Done")
+    s_t = time.time()
+    road_block = BlockGeenrator(block_num=bn,
+                                seed=10)
+    # prettyprint(road_block.generate_block().get_element())
+    save_path = "D:\\SceneGeneration\\ScenarioGenerationForAVTesting\\ProceduralScenarioGeneration\\xodr\\example"
+    road_block.generate(save_path)
+    # pos_array = road_block.generate_block_shape()
+
+    # print(pos_array)

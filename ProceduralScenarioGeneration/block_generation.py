@@ -41,8 +41,7 @@ class BlockGeenrator(ScenarioGenerator):
         
         self.set_random_seed(seed)
         # self.set_random_seed(102)
-        
-        
+
     def set_random_seed(self, seed: Optional[int] = 0):
         if seed is not None:
             self.random_seed = seed
@@ -407,76 +406,76 @@ class BlockGeenrator(ScenarioGenerator):
             # road.generate()
             # odr.add_road(road)
             
-        # for i in range(1, len(para_list)):
-        #     last_road_para = para_list[i-1]
-        #     next_road_para = para_list[i]
+        for i in range(1, len(para_list)):
+            last_road_para = para_list[i-1]
+            next_road_para = para_list[i]
             
-        #     last_road_type = list(last_road_para.keys())[0]
-        #     next_road_type = list(next_road_para.keys())[0]
+            last_road_type = list(last_road_para.keys())[0]
+            next_road_type = list(next_road_para.keys())[0]
             
-        #     # print("last = {}, next = {}".format(last_road_type, next_road_type))
+            # print("last = {}, next = {}".format(last_road_type, next_road_type))
             
-        #     if last_road_type == "ForkRoad":
-        #         connect_road = create_road(geometry=AdjustablePlanview(10),
-        #                                 id=road_id+i,
-        #                                 left_lanes=4,
-        #                                 right_lanes=0,
-        #                                 lane_width=3.2)
-        #     else:
-        #         connect_road = create_road(geometry=AdjustablePlanview(10),
-        #                                 id=road_id+i,
-        #                                 left_lanes=4,
-        #                                 right_lanes=4,
-        #                                 lane_width=3.2)
+            if last_road_type == "ForkRoad":
+                connect_road = create_road(geometry=AdjustablePlanview(10),
+                                        id=road_id+i,
+                                        left_lanes=4,
+                                        right_lanes=0,
+                                        lane_width=3.2)
+            else:
+                connect_road = create_road(geometry=AdjustablePlanview(10),
+                                        id=road_id+i,
+                                        left_lanes=4,
+                                        right_lanes=4,
+                                        lane_width=3.2)
             
-        #     pre_road_id = last_road_para[last_road_type]["road_id"]
-        #     suc_road_id = next_road_para[next_road_type]["road_id"]
-        #     if next_road_type == "Intersection":
-        #         # if next_road_para["num_intersection"] == 3:
-        #         suc_road_id += 2
-        #     elif next_road_type == "Roundabout":
-        #         suc_road_id += 4
-        #     # elif next_road_type == "ForkRoad":
-        #     #     suc_road_id += 1
-        #     if last_road_type == "ForkRoad":
-        #         pre_road_id += 1
+            pre_road_id = last_road_para[last_road_type]["road_id"]
+            suc_road_id = next_road_para[next_road_type]["road_id"]
+            if next_road_type == "Intersection":
+                # if next_road_para["num_intersection"] == 3:
+                suc_road_id += 2
+            elif next_road_type == "Roundabout":
+                suc_road_id += 4
+            # elif next_road_type == "ForkRoad":
+            #     suc_road_id += 1
+            if last_road_type == "ForkRoad":
+                pre_road_id += 1
                 
-        #     if last_road_type == "ForkRoad":
-        #         pre_road = road_obj_list[i-1][1]
-        #     elif last_road_type == "Intersection" or last_road_type == "Roundabout":
-        #         pre_road = road_obj_list[i-1][0]
-        #     else:
-        #         pre_road = road_obj_list[i-1]
+            if last_road_type == "ForkRoad":
+                pre_road = road_obj_list[i-1][1]
+            elif last_road_type == "Intersection" or last_road_type == "Roundabout":
+                pre_road = road_obj_list[i-1][0]
+            else:
+                pre_road = road_obj_list[i-1]
                 
-        #     if next_road_type == "ForkRoad":
-        #         suc_road = road_obj_list[i][0]
-        #     elif next_road_type == "Intersection" or next_road_type == "Roundabout":
-        #         suc_road = road_obj_list[i][2]
-        #     else:
-        #         suc_road = road_obj_list[i]
+            if next_road_type == "ForkRoad":
+                suc_road = road_obj_list[i][0]
+            elif next_road_type == "Intersection" or next_road_type == "Roundabout":
+                suc_road = road_obj_list[i][2]
+            else:
+                suc_road = road_obj_list[i]
                 
-        #     # print("pre_road_id = {}, succ_road_id = {}".format(pre_road.id, suc_road.id))
+            # print("pre_road_id = {}, succ_road_id = {}".format(pre_road.id, suc_road.id))
                 
-        #     reverse = True if next_road_type == "ForkRoad" or next_road_type == "Intersection" or next_road_type == "Roundabout" else False
+            reverse = True if next_road_type == "ForkRoad" or next_road_type == "Intersection" or next_road_type == "Roundabout" else False
                          
-        #     connect_road.add_predecessor(element_id=pre_road_id,
-        #                                  element_type=ElementType.road,
-        #                                  contact_point=ContactPoint.end)
-        #     connect_road.add_successor(element_id=suc_road_id,
-        #                                 element_type=ElementType.road,
-        #                                 contact_point=ContactPoint.start if not reverse else ContactPoint.end)
-        #     if pre_road.successor is not None:
-        #         pre_road.successor = None
-        #     pre_road.add_successor(element_type=ElementType.road,
-        #                            element_id=road_id+i,
-        #                            contact_point=ContactPoint.start)
-        #     # print(next_road_type)
-        #     # print(suc_road)
-        #     suc_road.add_successor(element_type=ElementType.road,
-        #                         element_id=road_id+i,
-        #                         contact_point=ContactPoint.end)
+            connect_road.add_predecessor(element_id=pre_road_id,
+                                         element_type=ElementType.road,
+                                         contact_point=ContactPoint.end)
+            connect_road.add_successor(element_id=suc_road_id,
+                                        element_type=ElementType.road,
+                                        contact_point=ContactPoint.start if not reverse else ContactPoint.end)
+            if pre_road.successor is not None:
+                pre_road.successor = None
+            pre_road.add_successor(element_type=ElementType.road,
+                                   element_id=road_id+i,
+                                   contact_point=ContactPoint.start)
+            # print(next_road_type)
+            # print(suc_road)
+            suc_road.add_successor(element_type=ElementType.road,
+                                element_id=road_id+i,
+                                contact_point=ContactPoint.end)
             
-        #     odr.add_road(connect_road)
+            odr.add_road(connect_road)
             
         odr.adjust_roads_and_lanes()
         
