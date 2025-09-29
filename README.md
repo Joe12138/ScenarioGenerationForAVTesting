@@ -168,9 +168,23 @@ To integrate the generated driving scenarios with the CARLA simulator, follow th
 2. Find pre-trained or train your own planning model[PD-planner](https://github.com/MCZhi/Predictive-Decision).
 3. Test the planning model in SMARTS simulator.
 
-## TODO
+<!-- ## TODO
 - [x] Add the code of road network generator
 - [x] Add the code of traffic rule generator
 - [x] Add the code of roadside structure generator
 - [ ] Add the code of dynamic object generator
-- [x] Add the code of experiments
+- [x] Add the code of experiments -->
+
+
+Please consider citing this work if you use this repository. The bibtex is as below:
+```
+@article{Lan2025, 
+    author = {Wenxing Lan and Jialin Liu and Bo Yuan and Xin Yao},
+    title = {AutoSceCraft: Generate Various Driving Scenarios from Scratch for Autonomous Driving Systems},
+    year = {2025},
+    journal = {Tsinghua Science and Technology},
+    keywords = {autonomous driving, driving simulator, road network generation, driving scenario generation, procedural content generation},
+    url = {https://www.sciopen.com/article/10.26599/TST.2025.9010045},
+    doi = {10.26599/TST.2025.9010045}
+}
+```

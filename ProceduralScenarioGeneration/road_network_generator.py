@@ -84,8 +84,8 @@ class RoadNetworkGenerator(ScenarioGenerator):
                  urban_shape: str = "rectangle",
                  width: float = 300*2*8,
                  length: float = 500*2*8,
-                 len_interval: float = 200,
-                 width_interval: float = 120,
+                 len_interval: float = 500,
+                 width_interval: float = 300,
                  diff_dist: float = 50):
         super().__init__()
         self.urban_shape = urban_shape
@@ -1009,8 +1009,7 @@ if __name__ == "__main__":
     # road_net_array = road_net_generator.get_road_network_stucture_array()
     # prettyprint(road_net_generator.road().get_element())
     # print(road_net_array)
-    road_net_generator.generate(
-        "/home/joelan/Desktop/ADTesting/ScenarioGenerationForAVTesting/ProceduralScenarioGeneration/xodr/example/")
+    road_net_generator.generate("/home/joelan/Desktop/DrivingScenarioGenerationPlatform/DrivingScenarioGenPlatform/backend/road_network_gen/example/xodr_files")
 
     print("hello world!")
     
